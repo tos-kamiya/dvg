@@ -65,8 +65,10 @@ class SCDVEmbedding:
                 ci += 1
 
         if ci == 0:  # prevent all words being removed
-            discarded_indices.pop()
-            ci += 1
+            keep_i_w = idx_words[0]
+            discarded_indices = [i for i, w in idx_words[1:]]
+            w2i[keep_i_w[1]] = keep_i_w[0]
+            ci = 1
 
         assert ci + len(discarded_indices) == len(idx_words)
 
