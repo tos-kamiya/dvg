@@ -10,9 +10,7 @@ import subprocess
 _script_dir: str = os.path.dirname(os.path.realpath(__file__))
 
 _ja_nkf_abspath: Optional[str] = None
-if platform.system() == "Windows" and os.path.exists(
-    os.path.join(_script_dir, "nkf32.exe")
-):
+if platform.system() == "Windows" and os.path.exists(os.path.join(_script_dir, "nkf32.exe")):
     _ja_nkf_abspath = os.path.abspath(os.path.join(_script_dir, "nkf32.exe"))
 
 
@@ -108,10 +106,7 @@ else:
     _system_temp_dir = tempfile.gettempdir()
 
     def pdf_parse(file_name: str) -> str:
-        tempf = os.path.join(
-            _system_temp_dir,
-            "%d.txt" % int.from_bytes(os.urandom(5), byteorder="little"),
-        )
+        tempf = os.path.join(_system_temp_dir, "%d.txt" % int.from_bytes(os.urandom(5), byteorder="little"))
         try:
             cmd = ["pdftotext.exe", file_name, tempf]
             p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

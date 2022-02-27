@@ -7,7 +7,7 @@ import sys
 
 import numpy as np
 
-from .scdv_embedding import Vec, SCDVEmbedding
+from .scdv_embedding import Vec, SCDVEmbedding, read_scdv_embedding
 from .scdv_embedding import inner_product_n  # DO NOT remove this. re-exporting it
 
 
@@ -79,7 +79,7 @@ class SCDVModel(Model):
     def __init__(self, tokenizer_name: str, model_file: str):
         self.tokenizer_name = tokenizer_name
         self.tokenizer = None
-        self.embedder = SCDVEmbedding(model_file)
+        self.embedder = read_scdv_embedding(model_file)
 
     def lines_to_vec(self, lines: List[str]) -> Vec:
         if self.tokenizer is None:

@@ -1,4 +1,4 @@
-from typing import Iterable, NewType
+from typing import Iterable, List, NewType
 
 from collections import Counter
 import pickle
@@ -16,14 +16,10 @@ def inner_product_n(dv: Vec, pv: Vec) -> float:
 
 
 class SCDVEmbedding:
-    def __init__(self, wordtopicvec_pack_file: str):
-        assert wordtopicvec_pack_file.endswith('.pkl')
-        with open(wordtopicvec_pack_file, 'rb') as inp:
-            data = pickle.load(inp)
-        words = data['words']
+    def __init__(self, words: List[str], clusters: np.ndarray, idf_wvs: np.ndarray):
         self.word_to_index = dict((w, i) for i, w in enumerate(words))
-        self.clusters = data['clusters']
-        self.idf_wvs = data['idf_wvs']
+        self.clusters = clusters
+        self.idf_wvs = idf_wvs
         self.m_shape = (self.clusters[0].size, self.idf_wvs[0].size)
 
     def embed(self, text: Iterable[str], sparse: bool = True) -> Vec:
@@ -67,6 +63,11 @@ class SCDVEmbedding:
             else:
                 w2i[w] = ci
                 ci += 1
+
+        if ci == 0:  # prevent all words being removed
+            discarded_indices.pop()
+            ci += 1
+
         assert ci + len(discarded_indices) == len(idx_words)
 
         self.word_to_index = w2i
@@ -82,9 +83,18 @@ class SCDVEmbedding:
             if norm(query_vec[i * len_idf_wvs : (i + 1) * len_idf_wvs]) == 0.0:
                 discarded_cluster_items.append(i)
 
-        # prevent all cluster items being discarded
-        if len(discarded_cluster_items) == self.m_shape[0]:
+        if len(discarded_cluster_items) == self.m_shape[0]:  # prevent all cluster items being discarded
             discarded_cluster_items.pop()
         
         self.clusters = np.delete(self.clusters, discarded_cluster_items, axis=1)
         self.m_shape = (self.clusters[0].size, self.idf_wvs[0].size)
+
+
+def read_scdv_embedding(wordtopicvec_pack_file: str) -> SCDVEmbedding:
+    assert wordtopicvec_pack_file.endswith('.pkl')
+    with open(wordtopicvec_pack_file, 'rb') as inp:
+        data = pickle.load(inp)
+    words = data['words']
+    clusters = data['clusters']
+    idf_wvs = data['idf_wvs']
+    return SCDVEmbedding(words, clusters, idf_wvs)
