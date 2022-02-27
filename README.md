@@ -6,8 +6,10 @@
 # dvg
 
 `dvg` is a grep that performs semantic similarity search.
-With SCDV models and sentence transformer models, search document files that contain similar parts to query.
+With SCDV models, search document files that contain similar parts to query.
 Supports searching within text files (.txt), PDF files (.pdf), and MS Word files (.docx).
+
+![](docs/images/run-animation.gif)
 
 ## Installation
 
@@ -58,7 +60,7 @@ Only paragraphs that do not contain the specified string will be included in the
 `--prefer-longer-than=CHARS, -l CHARS`  
 If the length of the paragraph (number of characters) is smaller than this, decrease the similarity value.
 
-`--worker=NUM, -j NUM`
+`--worker=NUM, -j NUM`  
 Number of worker processes. Option to run in parallel.
 
 ### Search individual lines of a text file

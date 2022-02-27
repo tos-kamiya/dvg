@@ -3,8 +3,10 @@
 # dvg
 
 `dvg`は、意味的類似検索を行うgrepです。
-SCDVモデルやsentence transformerモデルを使って、クエリのフレーズに似た部分を含む文書ファイルを検索します。
+SCDVモデルを使って、クエリのフレーズに似た部分を含む文書ファイルを検索します。
 テキストファイル（.txt）、PDFファイル（.pdf）、MS Wordファイル（.docx）からの検索に対応しています。
+
+![](docs/images/run-animation.gif)
 
 ## インストール
 
