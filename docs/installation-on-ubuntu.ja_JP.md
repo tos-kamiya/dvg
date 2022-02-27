@@ -10,11 +10,7 @@ Pythonのバージョン`3.8`と`3.9`に対応しています(PyTorchが必要�
 
 (2) `dvg`をインストール
 
-```sh
-pip3 install dvg[ja]
-```
-
-または
+githubのリリースページからファイル`dvg-xxxxxxxx-py3-none-any.whl`をダウンロードして、pipでインストールしてください。
 
 ```sh
 pip3 install dvg-xxxxxxxx-py3-none-any.whl[ja]

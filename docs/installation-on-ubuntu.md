@@ -10,11 +10,7 @@ The following steps have been checked on Ubuntu 20.04.
 
 (2) Install `dvg`.
 
-```sh
-pip3 install dvg
-```
-
-or
+Download the file `dvg-xxxxxxxx-py3-none-any.whl` from the github release page and install it with pip.
 
 ```sh
 pip3 install dvg-xxxxxxxx-py3-none-any.whl
@@ -23,5 +19,5 @@ pip3 install dvg-xxxxxxxx-py3-none-any.whl
 If you want to use the Japanese model, please install it with `[ja]`.
 
 ```sh
-pip3 install dvg[ja]
+pip3 install dvg-xxxxxxxx-py3-none-any.whl[ja]
 ```

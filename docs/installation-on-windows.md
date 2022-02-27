@@ -22,12 +22,8 @@ Make sure you can run pdftotext from a DOS prompt, etc.
 
 (2) Install `dvg`
 
-```sh
-pip install wheel
-pip install dvg
-```
+Download the file `dvg-xxxxxxxx-py3-none-any.whl` from the github release page and install it with pip.
 
-or 
 
 ```sh
 pip install wheel
@@ -37,6 +33,6 @@ pip install dvg-xxxxxxxx-py3-none-any.whl
 If you want to use the Japanese model, change the last line of the above command line to the following:
 
 ```sh
-pip install dvg[ja]
+pip install dvg-xxxxxxxx-py3-none-any.whl[ja]
 ```
 

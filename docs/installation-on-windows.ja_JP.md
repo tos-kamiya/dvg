@@ -22,12 +22,7 @@ DOSプロンプト等から、pdftotextを実行できることを確認して�
 
 (2) `dvg`をインストール
 
-```sh
-pip install wheel
-pip install dvg[ja]
-```
-
-または
+githubのリリースページからファイル`dvg-xxxxxxxx-py3-none-any.whl`をダウンロードして、pipでインストールしてください。
 
 ```sh
 pip install wheel
