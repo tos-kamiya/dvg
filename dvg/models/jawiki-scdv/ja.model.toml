@@ -1,0 +1,3 @@
+type = "scdv"
+tokenizer = "ja"
+file = "ja.pkl"
