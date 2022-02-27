@@ -32,11 +32,12 @@ class ParserTest(unittest.TestCase):
             self.assertEqual(read_content, "html\n1st paragraph.\n2nd paragraph.")
 
     def test_pdf_file(self):
-        from borb.pdf.canvas.layout.page_layout.multi_column_layout import (
-            SingleColumnLayout,
-        )
+        from borb.pdf.canvas.layout.page_layout.multi_column_layout import SingleColumnLayout
         from borb.pdf.canvas.layout.text.paragraph import Paragraph
-        from borb.pdf.document import Document
+        try:
+            from borb.pdf.document import Document  # borb v2.0.18
+        except ImportError:
+            from borb.pdf.document.document import Document  # borb v2.0.19
         from borb.pdf.page.page import Page
         from borb.pdf.pdf import PDF
 
