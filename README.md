@@ -9,6 +9,8 @@
 With SCDV models, search document files that contain similar parts to query.
 Supports searching within text files (.txt), PDF files (.pdf), and MS Word files (.docx).
 
+This example shows a text search from over 10 million answers on stackoverflow.com.
+
 ![](docs/images/run-animation.gif)
 
 ## Installation
@@ -16,7 +18,7 @@ Supports searching within text files (.txt), PDF files (.pdf), and MS Word files
 &rarr; [Installation on Ubuntu](docs/installation-on-ubuntu.md)  
 &rarr; [Installation on Windows](docs/installation-on-windows.md)  
 
-### TL;DR (typical usage)
+## TL;DR (typical usage)
 
 Search for the document files similar to the query phrase.
 
@@ -29,7 +31,7 @@ Sample run:
 
 Each line of output is, from left to right, similarity (the closer the number is to 1, the higher the similarity), length (characters) of the paragraph, file name, and range of line numbers.
 
-### Command-line options
+## Command-line options
 
 `dvg` has several options. Here are some options that may be used frequently.
 
@@ -57,13 +59,10 @@ Only paragraphs that contain the specified string will be included in the search
 `--exclude=TEXT, -e TEXT`  
 Only paragraphs that do not contain the specified string will be included in the search results.
 
-`--prefer-longer-than=CHARS, -l CHARS`  
-If the length of the paragraph (number of characters) is smaller than this, decrease the similarity value.
-
 `--worker=NUM, -j NUM`  
 Number of worker processes. Option to run in parallel.
 
-### Search individual lines of a text file
+## Search individual lines of a text file
 
 If you specify the options `--paragraph` and `--window=1` at the same time, you can search for individual lines in a text file. 
 
