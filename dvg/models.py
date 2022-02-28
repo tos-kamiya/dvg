@@ -100,17 +100,19 @@ class SCDVModel(Model):
 
 
 def build_model_files():
+    message_shown = False
     files = glob(os.path.join(_script_dir, 'models', '**', '*.pkl.part-*'))
-    if files:
-        print("> Build model files as a post installation hook.", file=sys.stderr)
-        for k, g in itertools.groupby(files, lambda f: os.path.splitext(f)[0]):
-            assert k.endswith('.pkl')
-            if os.path.exists(k):
-                continue  # for k, g
-            split_files = sorted(g)
-            with open(k, 'wb') as outp:
-                for f in split_files:
-                    with open(f, 'rb') as inp:
-                        outp.write(inp.read())
+    for k, g in itertools.groupby(files, lambda f: os.path.splitext(f)[0]):
+        assert k.endswith('.pkl')
+        if os.path.exists(k):
+            continue  # for k, g
+
+        if not message_shown:
+            print("> Build model files as a post installation hook.", file=sys.stderr)
+            message_shown = True
+
+        split_files = sorted(g)
+        with open(k, 'wb') as outp:
             for f in split_files:
-                os.remove(f)
+                with open(f, 'rb') as inp:
+                    outp.write(inp.read())

@@ -287,11 +287,7 @@ def main():
                         if a.verbose:
                             print_intermediate_search_result(search_results, (ci + 1) * chunk_size, time() - t0)
             else:
-                def chain_chunk_iter(chunk_it):
-                    for chunk in chunk_it:
-                        for item in chunk:
-                            yield item
-                df_it = chain_chunk_iter(chunked(expand_file_iter(a.file), chunk_size))
+                df_it = expand_file_iter(a.file)
                 search_results: List[Tuple[SPP, str]] = find_similar_paragraphs(query_vec, df_it, model, a, verbose=a.verbose)
         except FileNotFoundError as e:
             a.verbose and print(_ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr)
