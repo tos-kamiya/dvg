@@ -28,16 +28,19 @@ def load_tokenize_func(lang: Optional[str]) -> Callable[[str], Iterable[str]]:
             import transformers
         except ModuleNotFoundError as e:
             sys.exit("Error: transformers not installed.")
+
         tokenizer = transformers.MecabTokenizer(do_lower_case=True)
         return tokenizer.tokenize
-    else:
+    elif lang == 'en':
         import nltk
         try:
-            nltk.word_tokenize('hello, world.')
+            nltk.word_tokenize('hello, world.', language="english")
         except LookupError:
             nltk.download('punkt')
 
         return nltk.word_tokenize
+    else:
+        assert lang in ["en", "ja"]
 
 
 class Model:

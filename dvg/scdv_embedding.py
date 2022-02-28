@@ -48,6 +48,8 @@ class SCDVEmbedding:
         return vec * (1.0 / n)
 
     def optimize_for_query_vec(self, query_vec: Vec):
+        assert query_vec.size == self.m_shape[0] * self.m_shape[1]
+
         # remove words with zero-weight
         idx_words = sorted((i, w) for w, i in self.word_to_index.items())
         discarded_indices = []
@@ -76,9 +78,8 @@ class SCDVEmbedding:
         assert self.clusters.shape[0] == self.idf_wvs.shape[0] == len(self.word_to_index)
 
         # remove cluster items with zero-weight        
-        assert query_vec.size == self.m_shape[0] * self.m_shape[1]
         discarded_cluster_items = []
-        len_idf_wvs = self.m_shape[1]
+        len_idf_wvs = self.idf_wvs[0].size
         for i in range(self.clusters[0].size):
             if norm(query_vec[i * len_idf_wvs : (i + 1) * len_idf_wvs]) == 0.0:
                 discarded_cluster_items.append(i)
