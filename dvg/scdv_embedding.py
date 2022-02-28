@@ -28,12 +28,10 @@ class SCDVEmbedding:
         for word, freq in wf.items():
             i = self.word_to_index.get(word, None)
             if i is not None:
-                c = self.clusters[i]
-                idf_wv = self.idf_wvs[i]
                 if freq > 1:
-                    m += freq * np.outer(c, idf_wv)
+                    m += freq * np.outer(self.clusters[i], self.idf_wvs[i])
                 else:
-                    m += np.outer(c, idf_wv)
+                    m += np.outer(self.clusters[i], self.idf_wvs[i])
         vec = m.flatten()
 
         n = norm(vec)

@@ -23,7 +23,7 @@ _script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 def model_shared(model: Model):
-    shms =[]
+    shms = []
     if isinstance(model, CombinedModel):
         for m in model.models:
             shms.extend(model_shared(m))
@@ -34,17 +34,17 @@ def model_shared(model: Model):
         
         clusters = emb.clusters
         shmc = SharedMemory(create=True, size=clusters.nbytes)
+        shms.append(shmc)
         clusters_shared = np.ndarray(clusters.shape, dtype=clusters.dtype, buffer=shmc.buf)
         clusters_shared[:] = clusters[:]
         emb.clusters = clusters_shared
-        shms.append(shmc)
 
         idf_wvs = emb.idf_wvs
         shmv = SharedMemory(create=True, size=idf_wvs.nbytes)
+        shms.append(shmv)
         idf_wvs_shared = np.ndarray(idf_wvs.shape, dtype=idf_wvs.dtype, buffer=shmv.buf)
         idf_wvs_shared[:] = idf_wvs[:]
         emb.idf_wvs = idf_wvs_shared
-        shms.append(shmv)
     return shms
 
 
@@ -176,6 +176,7 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
 
     t0 = time()
     search_results: List[Tuple[SPP, str]] = []
+    sim_min_req: Optional[float] = None
     for dfi, df in enumerate(doc_files):
         # read lines from document file
         lines = parser.parse(df)
@@ -190,11 +191,15 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
             
             vec = model.lines_to_vec(para)
             sim = inner_product_n(vec, query_vec)
+            if sim_min_req is not None and sim < sim_min_req:
+                continue  # for pos, para
 
             if a.prefer_longer_than > 0:  # penalty for short paragraphs
                 r = sum(len(L) for L in para) / a.prefer_longer_than
                 if r < 1.0:
                     sim *= r
+                    if sim_min_req is not None and sim < sim_min_req:
+                        continue  # for pos, para
 
             spps.append((sim, pos, para))
         if not spps:
@@ -202,21 +207,21 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
 
         if a.paragraph:
             spps = prune_overlapped_paragraphs(spps)  # remove paragraphs that overlap
+            spps.sort(reverse=True)
+            del spps[a.top_n:]
         else:
             spps = [sorted(spps).pop()]  # extract only the most similar paragraphs in the file
 
         # update search results
-        spps.sort(reverse=True)
-        del spps[a.top_n:]
-        if len(search_results) < a.top_n:
+        if sim_min_req is None or spps[0][0] >= sim_min_req:
             search_results.extend((spp, df) for spp in spps)
-        else:
-            if search_results[-1][0][0] < spps[0][0]:
-                search_results.extend((spp, df) for spp in spps)
 
         trim_search_results(search_results, a.top_n)
         if verbose and dfi % 100 == 0:
             print_intermediate_search_result(search_results, dfi + 1, time() - t0)
+        
+        if len(search_results) >= a.top_n:
+            sim_min_req = search_results[-1][0][0]
 
     return search_results
 
@@ -278,9 +283,9 @@ def main():
         try:
             if a.workers and a.workers >= 2:
                 shms = model_shared(model)  # load the model into shared memory for process parallel
+                args_it = ((query_vec, dfs, model, a) for dfs in chunked(expand_file_iter(a.file), chunk_size))
+                t0 = time()
                 with Pool(processes=a.workers) as pool:
-                    t0 = time()
-                    args_it = ((query_vec, dfs, model, a) for dfs in chunked(expand_file_iter(a.file), chunk_size))
                     for ci, srs in enumerate(pool.imap_unordered(find_similar_paragraphs_i, args_it)):
                         search_results.extend(srs)
                         trim_search_results(search_results, a.top_n)
