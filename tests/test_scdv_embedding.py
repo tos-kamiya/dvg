@@ -32,15 +32,15 @@ class SCDVEmgeddingTest(unittest.TestCase):
 
         vec = emb.embed(['a'], sparse=False)
         v = unit_vector(np.array([0, 1, 0, 0, 0, 0], dtype=np.float32))
-        self.assertTrue(norm(vec - v) < 0.01)
+        self.assertTrue(np.allclose(vec, v))
 
         vec = emb.embed(['b'], sparse=False)
         v = unit_vector(np.array([0, 0, 0.25, 0.75, 0, 0], dtype=np.float32))
-        self.assertTrue(norm(vec - v) < 0.01)
+        self.assertTrue(np.allclose(vec, v))
 
         vec = emb.embed(['c'], sparse=False)
         v = unit_vector(np.array([0, 0, 0, 0, 0.5, 0.5], dtype=np.float32))
-        self.assertTrue(norm(vec - v) < 0.01)
+        self.assertTrue(np.allclose(vec, v))
 
     def test_otpimization(self):
         words = ['a', 'b', 'c', 'd']
@@ -71,8 +71,7 @@ class SCDVEmgeddingTest(unittest.TestCase):
             [0.00, 1.00], 
             [0.75, 0.25],
         ], dtype=np.float32)
-        d = emb.cluster_idf_wvs - np.concatenate((c, iv), axis=1)
-        self.assertTrue(norm(d.flatten()) < 0.01)
+        self.assertTrue(np.allclose(emb.cluster_idf_wvs, np.concatenate((c, iv), axis=1)))
 
     def test_otpimization_zerovec(self):
         words = ['a', 'b', 'c', 'd']
