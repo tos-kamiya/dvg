@@ -14,9 +14,9 @@ from init_attrs_with_kwargs import InitAttrsWKwArgs
 import numpy as np
 
 from .iter_funcs import chunked, ranges_overwrapping
-from .text_funcs import extract_para_iter, includes_all_texts, includes_any_of_texts
 from .models import Model, SCDVModel, CombinedModel, Vec, find_file_in_model_dir, inner_product_n, build_model_files
 from . import parsers
+from .text_funcs import extract_para_iter, includes_all_texts, includes_any_of_texts
 
 
 _script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -31,20 +31,13 @@ def model_shared(model: Model):
         model.tokenizer = None
 
         emb = model.embedder
-        
-        clusters = emb.clusters
-        shmc = SharedMemory(create=True, size=clusters.nbytes)
-        shms.append(shmc)
-        clusters_shared = np.ndarray(clusters.shape, dtype=clusters.dtype, buffer=shmc.buf)
-        clusters_shared[:] = clusters[:]
-        emb.clusters = clusters_shared
 
-        idf_wvs = emb.idf_wvs
-        shmv = SharedMemory(create=True, size=idf_wvs.nbytes)
-        shms.append(shmv)
-        idf_wvs_shared = np.ndarray(idf_wvs.shape, dtype=idf_wvs.dtype, buffer=shmv.buf)
-        idf_wvs_shared[:] = idf_wvs[:]
-        emb.idf_wvs = idf_wvs_shared
+        cvs = emb.cluster_idf_wvs
+        shmc = SharedMemory(create=True, size=cvs.nbytes)
+        shms.append(shmc)
+        cvs_shared = np.ndarray(cvs.shape, dtype=cvs.dtype, buffer=shmc.buf)
+        cvs_shared[:] = cvs[:]
+        emb.cluster_idf_wvs = cvs_shared
     return shms
 
 
@@ -77,6 +70,7 @@ class CLArgs(InitAttrsWKwArgs):
     workers: Optional[int]
     help: bool
     version: bool
+
 
 __doc__: str = """Document-vector Grep.
 
@@ -268,11 +262,9 @@ def main():
         model = models[0]
 
     # 2. query
-    query_vec = model.lines_to_vec([a.query])
-
-    # optimize the model from a given query.
-    model.optimize_for_query_vec(query_vec)
-    query_vec = model.lines_to_vec([a.query])
+    query_lines = [a.query]
+    model.optimize_for_query_lines(query_lines)
+    query_vec = model.lines_to_vec(query_lines)
 
     chunk_size = 10000
     shms = None

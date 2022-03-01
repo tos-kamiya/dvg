@@ -18,20 +18,21 @@ def inner_product_n(dv: Vec, pv: Vec) -> float:
 class SCDVEmbedding:
     def __init__(self, words: List[str], clusters: np.ndarray, idf_wvs: np.ndarray):
         self.word_to_index = dict((w, i) for i, w in enumerate(words))
-        self.clusters = clusters
-        self.idf_wvs = idf_wvs
-        self.m_shape = (self.clusters[0].size, self.idf_wvs[0].size)
+        self.cluster_idf_wvs = np.concatenate((clusters, idf_wvs), axis=1)
+        self.m_shape = (clusters[0].size, idf_wvs[0].size)
 
     def embed(self, text: Iterable[str], sparse: bool = True) -> Vec:
         wf = Counter(text)
         m = np.zeros(self.m_shape, dtype=np.float32)
+        cluster_size = self.m_shape[0]
         for word, freq in wf.items():
             i = self.word_to_index.get(word, None)
             if i is not None:
+                cv = self.cluster_idf_wvs[i]
                 if freq > 1:
-                    m += freq * np.outer(self.clusters[i], self.idf_wvs[i])
+                    m += freq * np.outer(cv[:cluster_size], cv[cluster_size:])
                 else:
-                    m += np.outer(self.clusters[i], self.idf_wvs[i])
+                    m += np.outer(cv[:cluster_size], cv[cluster_size:])
         vec = m.flatten()
 
         n = norm(vec)
@@ -73,22 +74,22 @@ class SCDVEmbedding:
         assert ci + len(discarded_indices) == len(idx_words)
 
         self.word_to_index = w2i
-        self.clusters = np.delete(self.clusters, discarded_indices, axis=0)
-        self.idf_wvs = np.delete(self.idf_wvs, discarded_indices, axis=0)
-        assert self.clusters.shape[0] == self.idf_wvs.shape[0] == len(self.word_to_index)
+        self.cluster_idf_wvs = np.delete(self.cluster_idf_wvs, discarded_indices, axis=0)
+        assert self.cluster_idf_wvs.shape[0] == len(self.word_to_index)
 
         # remove cluster items with zero-weight        
         discarded_cluster_items = []
-        len_idf_wvs = self.idf_wvs[0].size
-        for i in range(self.clusters[0].size):
+        len_idf_wvs = self.m_shape[1]
+        cluster_size = self.m_shape[0]
+        for i in range(cluster_size):
             if norm(query_vec[i * len_idf_wvs : (i + 1) * len_idf_wvs]) == 0.0:
                 discarded_cluster_items.append(i)
 
-        if len(discarded_cluster_items) == self.m_shape[0]:  # prevent all cluster items being discarded
+        if len(discarded_cluster_items) == cluster_size:  # prevent all cluster items being discarded
             discarded_cluster_items.pop()
         
-        self.clusters = np.delete(self.clusters, discarded_cluster_items, axis=1)
-        self.m_shape = (self.clusters[0].size, self.idf_wvs[0].size)
+        self.cluster_idf_wvs = np.delete(self.cluster_idf_wvs, discarded_cluster_items, axis=1)
+        self.m_shape = (cluster_size - len(discarded_cluster_items), len_idf_wvs)
 
 
 def read_scdv_embedding(wordtopicvec_pack_file: str) -> SCDVEmbedding:

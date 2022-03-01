@@ -50,7 +50,7 @@ class Model:
     def find_oov_tokens(self, line: str) -> List[str]:
         raise NotImplementedError
     
-    def optimize_for_query_vec(self, pattern_vec: Vec):
+    def optimize_for_query_lines(self, query_lines: List[str]):
         raise NotImplementedError
 
 
@@ -71,11 +71,9 @@ class CombinedModel(Model):  # todo !! TEST !!
             oov_set.intersection_update(m.find_oov_tokens(line))
         return sorted(oov_set)
 
-    def optimize_for_query_vec(self, pattern_vec: Vec):
-        assert self.vec_widths is not None
-        for i, (m, w) in enumerate(zip(self.models, self.vec_widths)):
-            sub_pattern_vec = pattern_vec[i * w : (i + 1) * w]
-            m.optimize_for_query_vec(sub_pattern_vec)
+    def optimize_for_query_lines(self, query_lines: List[str]):
+        for m in self.models:
+            m.optimize_for_query_lines(query_lines)
 
 
 class SCDVModel(Model):
@@ -98,8 +96,9 @@ class SCDVModel(Model):
         oov_tokens = [t for t in tokens if t not in self.embedder.word_to_index]
         return oov_tokens
 
-    def optimize_for_query_vec(self, pattern_vec: Vec):
-        self.embedder.optimize_for_query_vec(pattern_vec)
+    def optimize_for_query_lines(self, query_lines: List[str]):
+        query_vec = self.lines_to_vec(query_lines)
+        self.embedder.optimize_for_query_vec(query_vec)
 
 
 def build_model_files():
