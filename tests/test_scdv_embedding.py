@@ -63,15 +63,15 @@ class SCDVEmgeddingTest(unittest.TestCase):
         emb.optimize_for_query_vec(query_vec)
 
         self.assertEqual(emb.word_to_index, {'a': 0, 'd': 1})
-        d = emb.clusters - np.array([
+        c = np.array([
             [1.0], 
             [0.5],
         ], dtype=np.float32)
-        self.assertTrue(norm(d.flatten()) < 0.01)
-        d = emb.idf_wvs - np.array([
+        iv = np.array([
             [0.00, 1.00], 
             [0.75, 0.25],
         ], dtype=np.float32)
+        d = emb.cluster_idf_wvs - np.concatenate((c, iv), axis=1)
         self.assertTrue(norm(d.flatten()) < 0.01)
 
     def test_otpimization_zerovec(self):
@@ -94,10 +94,8 @@ class SCDVEmgeddingTest(unittest.TestCase):
         emb.optimize_for_query_vec(query_vec)
 
         self.assertTrue(len(emb.word_to_index) > 0)
-        self.assertEqual(len(emb.word_to_index), emb.clusters.shape[0])
-        self.assertTrue(emb.clusters.shape[1] > 0)
-        self.assertEqual(len(emb.word_to_index), emb.idf_wvs.shape[0])
-        self.assertTrue(emb.idf_wvs.shape[1] > 0)
+        self.assertEqual(len(emb.word_to_index), emb.cluster_idf_wvs.shape[0])
+        self.assertTrue(emb.cluster_idf_wvs.shape[1] > 0)
 
 
 if __name__ == "__main__":
