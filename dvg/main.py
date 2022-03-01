@@ -14,7 +14,7 @@ from init_attrs_with_kwargs import InitAttrsWKwArgs
 import numpy as np
 
 from .iter_funcs import chunked, ranges_overwrapping
-from .models import Model, SCDVModel, CombinedModel, Vec, find_file_in_model_dir, inner_product_n, build_model_files
+from .models import Model, SCDVModel, CombinedModel, Vec, inner_product_n, find_model_specs
 from . import scanners
 from .text_funcs import extract_para_iter, includes_all_texts, includes_any_of_texts
 
@@ -197,7 +197,7 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
                     if sim_min_req is not None and sim < sim_min_req:
                         continue  # for pos, para
 
-            spps.append((sim, pos, para))
+            spps.append((sim, pos, lines))
         if not spps:
             continue  # for dfi, df
 
@@ -227,19 +227,19 @@ def find_similar_paragraphs_i(a):
 
 
 def main():
-    # A charm to make ANSI escape sequences work on Windows
-    if platform.system() == "Windows":
-        import colorama
-        colorama.init()
-
-    # post-installatino hook
-    build_model_files()
-
     argv = sys.argv[1:]
     for i, a in enumerate(argv):
         if a == "--bin-dir":
             print(os.path.join(_script_dir, "bin"))
             return
+        if a == "--model-dir":
+            print(os.path.join(_script_dir, "models"))
+            return
+
+    # A charm to make ANSI escape sequences work on Windows
+    if platform.system() == "Windows":
+        import colorama
+        colorama.init()
 
     # command-line analysis
     argv = sys.argv[1:]
@@ -249,14 +249,11 @@ def main():
     # 1. model
     models: List[Model] = []
     for m in a.model.split('+'):
-        m0 = m
-        if not m.endswith('.pkl'):
-            m = m + '.pkl'
-        if not os.path.exists(m):
-            m = find_file_in_model_dir(m)
-            if not m:
-                sys.exit("Error: model not found: %s" % m0)
-        model = SCDVModel('ja', m)
+        s = find_model_specs(m)
+        if s is None:
+            sys.exit('Error: model not found: %s' % m)
+        tokenizer, model_file = s
+        model = SCDVModel(tokenizer, model_file)
         models.append(model)
     if len(models) >= 2:
         model = CombinedModel(models)
@@ -302,11 +299,12 @@ def main():
         if a.header:
             print("\t".join(["sim", "chars", "location", "text"]))
         for spp, df in search_results:
-            sim, pos, para = spp
+            sim, (b, e), lines = spp
             if sim < 0.0:
                 break
+            para = lines[b:e]
             excerpt = excerpt_text(para, model.lines_to_vec, query_vec, a.excerpt_length)
-            print("%g\t%d\t%s:%d-%d\t%s" % (sim, sum(len(L) for L in para), df, pos[0] + 1, pos[1] + 1, excerpt))
+            print("%g\t%d\t%s:%d-%d\t%s" % (sim, sum(len(L) for L in para), df, b + 1, e + 1, excerpt))
     finally:
         if shms is not None:
             model_shared_close(shms)

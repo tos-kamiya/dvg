@@ -1,4 +1,4 @@
-from typing import Callable, List, Iterable, Optional
+from typing import Callable, List, Iterable, Optional, Tuple
 
 from glob import glob
 import itertools
@@ -6,6 +6,7 @@ import os
 import sys
 
 import numpy as np
+import toml
 
 from .scdv_embedding import Vec, SCDVEmbedding, read_scdv_embedding
 from .scdv_embedding import inner_product_n  # DO NOT remove this. re-exporting it
@@ -14,10 +15,18 @@ from .scdv_embedding import inner_product_n  # DO NOT remove this. re-exporting 
 _script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
-def find_file_in_model_dir(file_name: str) -> Optional[str]:
-    files = glob(os.path.join(_script_dir, 'models', '**', file_name))
+def find_model_specs(model_name: str) -> Optional[Tuple[str, str]]:
+    files = glob(os.path.join(_script_dir, 'models', '**', model_name + ".model.toml"))
     if len(files) == 1:
-        return files[0]
+        toml_file = files[0]
+        with open(toml_file, 'r') as inp:
+            text = inp.read()
+        data = toml.loads(text)
+        assert data['type'] == 'scdv'
+        tokenizer_name = data['tokenizer']
+        dir = os.path.dirname(toml_file)
+        file_path = os.path.join(dir, data['file'])
+        return tokenizer_name, file_path
     else:
         return None
 
@@ -80,7 +89,12 @@ class SCDVModel(Model):
     def __init__(self, tokenizer_name: str, model_file: str):
         self.tokenizer_name = tokenizer_name
         self.tokenizer = None
-        self.embedder = read_scdv_embedding(model_file)
+        try:
+            self.embedder = read_scdv_embedding(model_file)
+        except:
+            # build the model file and re-try to read
+            build_model_files(model_file)
+            self.embedder = read_scdv_embedding(model_file)
 
     def lines_to_vec(self, lines: List[str]) -> Vec:
         if self.tokenizer is None:
@@ -101,17 +115,12 @@ class SCDVModel(Model):
         self.embedder.optimize_for_query_vec(query_vec)
 
 
-def build_model_files():
-    message_shown = False
-    files = glob(os.path.join(_script_dir, 'models', '**', '*.pkl.part-*'))
+def build_model_files(model_file: str):
+    files = glob(model_file + ".part-*")
     for k, g in itertools.groupby(files, lambda f: os.path.splitext(f)[0]):
         assert k.endswith('.pkl')
-        if os.path.exists(k):
-            continue  # for k, g
 
-        if not message_shown:
-            print("> Build model files as a post installation hook.", file=sys.stderr)
-            message_shown = True
+        print("> Build model files as a post installation hook.", file=sys.stderr)
 
         split_files = sorted(g)
         with open(k, 'wb') as outp:
