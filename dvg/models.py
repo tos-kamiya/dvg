@@ -15,8 +15,10 @@ from .scdv_embedding import inner_product_n  # DO NOT remove this. re-exporting 
 _script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
-def find_model_specs(model_name: str) -> Optional[Tuple[str, str]]:
-    files = glob(os.path.join(_script_dir, 'models', '**', model_name + ".model.toml"))
+def find_model_specs(model_name: str, model_dir: Optional[str] = None) -> Optional[Tuple[str, str]]:
+    if model_dir is None:
+        model_dir = os.path.join(_script_dir, 'models')
+    files = glob(os.path.join(model_dir, '**', model_name + ".model.toml"))
     if len(files) == 1:
         toml_file = files[0]
         with open(toml_file, 'r') as inp:
@@ -41,13 +43,9 @@ def load_tokenize_func(lang: Optional[str]) -> Callable[[str], Iterable[str]]:
         tokenizer = transformers.MecabTokenizer(do_lower_case=True)
         return tokenizer.tokenize
     elif lang == 'en':
-        import nltk
-        try:
-            nltk.word_tokenize('hello, world.', language="english")
-        except LookupError:
-            nltk.download('punkt')
-
-        return nltk.word_tokenize
+        from nltk.tokenize import TreebankWordTokenizer
+        tokenizer = TreebankWordTokenizer()
+        return tokenizer.tokenize
     else:
         assert lang in ["en", "ja"]
 
@@ -93,7 +91,7 @@ class SCDVModel(Model):
             self.embedder = read_scdv_embedding(model_file)
         except:
             # build the model file and re-try to read
-            build_model_files(model_file)
+            build_model_file(model_file)
             self.embedder = read_scdv_embedding(model_file)
 
     def lines_to_vec(self, lines: List[str]) -> Vec:
@@ -115,7 +113,7 @@ class SCDVModel(Model):
         self.embedder.optimize_for_query_vec(query_vec)
 
 
-def build_model_files(model_file: str):
+def build_model_file(model_file: str):
     files = glob(model_file + ".part-*")
     for k, g in itertools.groupby(files, lambda f: os.path.splitext(f)[0]):
         assert k.endswith('.pkl')
