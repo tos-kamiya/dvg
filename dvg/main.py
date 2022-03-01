@@ -61,12 +61,13 @@ class CLArgs(InitAttrsWKwArgs):
     verbose: bool
     model: str
     top_n: int
-    paragraph: bool
+    paragraph_search: bool
     window: int
     include: List[str]
     exclude: List[str]
-    prefer_longer_than: int
-    headline_length: int
+    min_length: int
+    excerpt_length: int
+    header: bool
     workers: Optional[int]
     help: bool
     version: bool
@@ -82,14 +83,15 @@ Usage:
 Options:
   --verbose, -v                 Verbose.
   --model=MODEL, -m MODEL       Model name.
-  --top-n=NUM, -t NUM           Show top NUM files [default: {dtn}].
-  --paragraph, -p               Search paragraphs in documents.
+  --top-n=NUM, -n NUM           Show top NUM files [default: {dtn}].
+  --paragraph-search, -p        Search paragraphs in documents.
   --window=NUM, -w NUM          Line window size [default: {dws}].
   --include=TEXT, -i TEXT       Requires containing the specified text.
   --exclude=TEXT, -e TEXT       Requires not containing the specified text.
-  --prefer-longer-than=CHARS, -l CHARS  Paragraphs shorter than this get a penalty [default: {dplt}].
-  --headline-length=CHARS, -a CHARS     Length of headline [default: {dhc}].
-  --workers=WORKERS -j WORKERS  Worker threads.
+  --min-length=CHARS, -l CHARS  Paragraphs shorter than this get a penalty [default: {dplt}].
+  --excerpt-length=CHARS, -t CHARS      Length of the text to be excerpted [default: {dhc}].
+  --header, -H                  Print the header line.
+  --workers=WORKERS -j WORKERS  Worker process.
 """.format(dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dhc=DEFAULT_HEADLINE_CHARS)
 
 
@@ -127,19 +129,19 @@ def prune_overlapped_paragraphs(spps: List[SPP]) -> List[SPP]:
     return [ipsrls for i, ipsrls in enumerate(spps) if i not in dropped_index_set]
 
 
-def extract_headline(lines: List[str], lines_to_vec: Callable[[List[str]], Vec], query_vec: Vec, headline_len: int) -> str:
+def excerpt_text(lines: List[str], lines_to_vec: Callable[[List[str]], Vec], query_vec: Vec, length_to_excerpt: int) -> str:
     if not lines:
         return ""
 
     if len(lines) == 1:
-        return lines[0][:headline_len]
+        return lines[0][:length_to_excerpt]
 
     len_lines = len(lines)
     max_ip_data = None
     for p in range(len_lines):
         para_textlen = len(lines[p])
         q = p + 1
-        while q < len_lines and para_textlen < headline_len:
+        while q < len_lines and para_textlen < length_to_excerpt:
             para_textlen += len(lines[q])
             q += 1
         vec = lines_to_vec(lines[p:q])
@@ -149,9 +151,9 @@ def extract_headline(lines: List[str], lines_to_vec: Callable[[List[str]], Vec],
     assert max_ip_data is not None
 
     sr = max_ip_data[1]
-    headline_text = "|".join(lines[sr[0] : sr[1]])
-    headline_text = headline_text[:headline_len]
-    return headline_text
+    excerpt = "|".join(lines[sr[0] : sr[1]])
+    excerpt = excerpt[:length_to_excerpt]
+    return excerpt
 
 
 def trim_search_results(search_results: List[Tuple[SPP, str]], top_n: int):
@@ -188,8 +190,8 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
             if sim_min_req is not None and sim < sim_min_req:
                 continue  # for pos, para
 
-            if a.prefer_longer_than > 0:  # penalty for short paragraphs
-                r = sum(len(L) for L in para) / a.prefer_longer_than
+            if a.min_length > 0:  # penalty for short paragraphs
+                r = sum(len(L) for L in para) / a.min_length
                 if r < 1.0:
                     sim *= r
                     if sim_min_req is not None and sim < sim_min_req:
@@ -199,7 +201,7 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
         if not spps:
             continue  # for dfi, df
 
-        if a.paragraph:
+        if a.paragraph_search:
             spps = prune_overlapped_paragraphs(spps)  # remove paragraphs that overlap
             spps.sort(reverse=True)
             del spps[a.top_n:]
@@ -297,12 +299,14 @@ def main():
 
         # output search results
         trim_search_results(search_results, a.top_n)
+        if a.header:
+            print("\t".join(["sim", "chars", "location", "text"]))
         for spp, df in search_results:
             sim, pos, para = spp
             if sim < 0.0:
                 break
-            headline = extract_headline(para, model.lines_to_vec, query_vec, a.headline_length)
-            print("%g\t%d\t%s:%d-%d\t%s" % (sim, sum(len(L) for L in para), df, pos[0] + 1, pos[1] + 1, headline))
+            excerpt = excerpt_text(para, model.lines_to_vec, query_vec, a.excerpt_length)
+            print("%g\t%d\t%s:%d-%d\t%s" % (sim, sum(len(L) for L in para), df, pos[0] + 1, pos[1] + 1, excerpt))
     finally:
         if shms is not None:
             model_shared_close(shms)

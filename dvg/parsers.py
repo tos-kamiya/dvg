@@ -9,6 +9,13 @@ import subprocess
 
 _script_dir: str = os.path.dirname(os.path.realpath(__file__))
 
+
+@contextmanager
+def open_file(filename: str, mode: str = "r") -> Generator[TextIO, None, None]:
+    with open(filename, mode, encoding="utf-8", errors="replace") as fp:
+        yield fp
+
+
 _ja_nkf_abspath: Optional[str] = None
 if platform.system() == "Windows" and os.path.exists(os.path.join(_script_dir, "nkf32.exe")):
     _ja_nkf_abspath = os.path.abspath(os.path.join(_script_dir, "nkf32.exe"))
@@ -27,12 +34,6 @@ else:
             return inp.read()
 
 
-@contextmanager
-def open_file(filename: str, mode: str = "r") -> Generator[TextIO, None, None]:
-    with open(filename, mode, encoding="utf-8", errors="replace") as fp:
-        yield fp
-
-
 class ParseError(Exception):
     pass
 
@@ -47,12 +48,9 @@ class Parser:
             raise e
         except Exception as e:
             raise ParseError("ParseError: in parsing file: %s" % repr(file_name)) from e
-        return self.clean_text(text)
+        return self.parse_text(text)
 
     def parse_text(self, text: str) -> List[str]:
-        return self.clean_text(text)
-
-    def clean_text(self, text: str) -> List[str]:
         lines = text.split("\n")
         r = []
         for L in lines:
