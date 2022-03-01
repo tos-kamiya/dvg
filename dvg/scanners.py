@@ -34,23 +34,23 @@ else:
             return inp.read()
 
 
-class ParseError(Exception):
+class ScanError(Exception):
     pass
 
 
-class Parser:
-    def parse(self, file_name: str) -> List[str]:
+class Scanner:
+    def scan(self, file_name: str) -> List[str]:
         try:
-            text = self._parse_i(file_name)
+            text = self._scan_i(file_name)
         except FileNotFoundError as e:
             raise e
-        except ParseError as e:
+        except ScanError as e:
             raise e
         except Exception as e:
-            raise ParseError("ParseError: in parsing file: %s" % repr(file_name)) from e
-        return self.parse_text(text)
+            raise ScanError("ScanError: in reading file: %s" % repr(file_name)) from e
+        return self.to_lines(text)
 
-    def parse_text(self, text: str) -> List[str]:
+    def to_lines(self, text: str) -> List[str]:
         lines = text.split("\n")
         r = []
         for L in lines:
@@ -59,12 +59,12 @@ class Parser:
             r.append(L)
         return r
 
-    def _parse_i(self, file_name: str) -> str:
+    def _scan_i(self, file_name: str) -> str:
         assert file_name != "-"
 
         i = file_name.rfind(".")
         if i < 0:
-            raise ParseError("ParseError: file has NO extension: %s" % repr(file_name))
+            raise ScanError("ScanError: file has NO extension: %s" % repr(file_name))
 
         if not os.path.exists(file_name):
             raise FileNotFoundError("Error: file not found: %s" % file_name)
@@ -72,25 +72,25 @@ class Parser:
         extension = file_name[i:].lower()
 
         if extension in [".html", "htm"]:
-            return html_parse(file_name)
+            return html_scan(file_name)
         elif extension == ".pdf":
-            return pdf_parse(file_name)
+            return pdf_scan(file_name)
         elif extension == ".docx":
-            return docx_parse(file_name)
+            return docx_scan(file_name)
         else:
             return read_text_file(file_name)
 
 
 if platform.system() != "Windows":
 
-    def pdf_parse(file_name: str) -> str:
+    def pdf_scan(file_name: str) -> str:
         import pdftotext
 
         try:
             with open(file_name, "rb") as f:
                 pdf = pdftotext.PDF(f)
         except pdftotext.Error as e:
-            raise ParseError("ParseError: %s, file: %s" % (str(e), repr(file_name)))
+            raise ScanError("ScanError: %s, file: %s" % (str(e), repr(file_name)))
 
         page_texts = [page for page in pdf]
         text = "".join(page_texts)
@@ -103,13 +103,13 @@ else:
 
     _system_temp_dir = tempfile.gettempdir()
 
-    def pdf_parse(file_name: str) -> str:
+    def pdf_scan(file_name: str) -> str:
         tempf = os.path.join(_system_temp_dir, "%d.txt" % int.from_bytes(os.urandom(5), byteorder="little"))
         try:
             cmd = ["pdftotext.exe", file_name, tempf]
             p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if p.returncode != 0:
-                raise ParseError("ParseError: %s, file: %s" % (p.stderr.decode("utf-8").rstrip(), repr(file_name)))
+                raise ScanError("ScanError: %s, file: %s" % (p.stderr.decode("utf-8").rstrip(), repr(file_name)))
             with open_file(tempf) as f:
                 text = f.read()
         finally:
@@ -118,7 +118,7 @@ else:
         return text
 
 
-def html_parse(file_name: str) -> str:
+def html_scan(file_name: str) -> str:
     import bs4
 
     with open_file(file_name) as inp:
@@ -130,11 +130,11 @@ def html_parse(file_name: str) -> str:
     return "\n".join(texts)
 
 
-def docx_parse(file_name: str) -> str:
+def docx_scan(file_name: str) -> str:
     import docx2txt
     import zipfile
 
     try:
         return docx2txt.process(file_name)
     except zipfile.BadZipFile:
-        raise ParseError("ParseError: encrypted or corrupted .docx file: %s" % repr(file_name))
+        raise ScanError("ScanError: encrypted or corrupted .docx file: %s" % repr(file_name))

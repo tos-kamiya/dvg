@@ -15,7 +15,7 @@ import numpy as np
 
 from .iter_funcs import chunked, ranges_overwrapping
 from .models import Model, SCDVModel, CombinedModel, Vec, find_file_in_model_dir, inner_product_n, build_model_files
-from . import parsers
+from . import scanners
 from .text_funcs import extract_para_iter, includes_all_texts, includes_any_of_texts
 
 
@@ -168,14 +168,14 @@ def print_intermediate_search_result(search_results: List[Tuple[SPP, str]], done
 
 
 def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Model, a: CLArgs, verbose: bool = False) -> List[Tuple[SPP, str]]:
-    parser = parsers.Parser()
+    scanner = scanners.Scanner()
 
     t0 = time()
     search_results: List[Tuple[SPP, str]] = []
     sim_min_req: Optional[float] = None
     for dfi, df in enumerate(doc_files):
         # read lines from document file
-        lines = parser.parse(df)
+        lines = scanner.scan(df)
 
         # for each paragraph in the file, calculate the similarity to the query
         spps: List[SPP] = []

@@ -7,13 +7,13 @@ import tempfile
 import dvg
 
 
-class ParserTest(unittest.TestCase):
+class ScannerTest(unittest.TestCase):
     def test_text_file(self):
         with tempfile.TemporaryDirectory() as tempdir:
             p = Path(tempdir) / "a.txt"
             content = "1st line.\n2nd line.\n"
             p.write_text(content)
-            read_content = dvg.parsers.read_text_file(str(p))
+            read_content = dvg.scanners.read_text_file(str(p))
             self.assertEqual(read_content, content)
 
     def test_html_file(self):
@@ -27,7 +27,7 @@ class ParserTest(unittest.TestCase):
 </body>
 </html>"""
             p.write_text(content)
-            read_content = dvg.parsers.html_parse(str(p))
+            read_content = dvg.scanners.html_scan(str(p))
             read_content = re.sub(r"\n+", r"\n", read_content).rstrip()
             self.assertEqual(read_content, "html\n1st paragraph.\n2nd paragraph.")
 
@@ -53,7 +53,7 @@ class ParserTest(unittest.TestCase):
             with open(p, "wb") as pdf_file_handle:
                 PDF.dumps(pdf_file_handle, pdf)
 
-            read_content = dvg.parsers.pdf_parse(str(p))
+            read_content = dvg.scanners.pdf_scan(str(p))
             read_content = re.sub(r"\n+", r"\n", read_content).rstrip()
             self.assertEqual(read_content, "1st paragraph.\n2nd paragraph.")
 
@@ -69,7 +69,7 @@ class ParserTest(unittest.TestCase):
     #         document.add_paragraph("1st paragraph.")
     #         document.save(str(p))
 
-    #         read_content = dvg.parsers.docx_parse(str(p))
+    #         read_content = dvg.scanners.docx_scan(str(p))
     #         read_content = re.sub(r'\n+', r'\n', read_content).rstrip()
     #         self.assertEqual(read_content, '1st paragraph.\n2nd paragraph.')
 
