@@ -35,17 +35,27 @@ def find_model_specs(model_name: str, model_dir: Optional[str] = None) -> Option
 
 def load_tokenize_func(lang: Optional[str]) -> Callable[[str], Iterable[str]]:
     if lang == "ja":
-        try:
-            import transformers
-        except ModuleNotFoundError as e:
-            sys.exit("Error: transformers not installed.")
-
+        import transformers
+        
         tokenizer = transformers.MecabTokenizer(do_lower_case=True)
         return tokenizer.tokenize
     elif lang == 'en':
-        from nltk.tokenize import TreebankWordTokenizer
-        tokenizer = TreebankWordTokenizer()
-        return tokenizer.tokenize
+        import unicodedata
+
+        import nltk
+        try:
+            nltk.word_tokenize('hello, world.')
+        except LookupError:
+            nltk.download('punkt')
+
+        # ref: https://stackoverflow.com/questions/517923/what-is-the-best-way-to-remove-accents-normalize-in-a-python-unicode-string
+        def strip_accents(s):
+            return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+
+        def tokenize(text: str):
+            tokens = nltk.word_tokenize(text)
+            return [strip_accents(t).lower() for t in tokens]
+        return tokenize
     else:
         assert lang in ["en", "ja"]
 
