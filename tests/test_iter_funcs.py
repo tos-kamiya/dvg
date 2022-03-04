@@ -40,7 +40,26 @@ class IterFuncsTest(unittest.TestCase):
         assert tc >= 100
         assert fc >= 100
 
-    def test_chunked(self):
+    def test_chunked_(self):
+        for i, c in enumerate(chunked(range(6), 3)):
+            if i == 0:
+                self.assertSequenceEqual(c, [0, 1, 2])
+            elif i == 1:
+                self.assertSequenceEqual(c, [3, 4, 5])
+            else:
+                self.assertTrue(False)
+
+        for i, c in enumerate(chunked(range(7), 3)):
+            if i == 0:
+                self.assertSequenceEqual(c, [0, 1, 2])
+            elif i == 1:
+                self.assertSequenceEqual(c, [3, 4, 5])
+            elif i == 2:
+                self.assertSequenceEqual(c, [6])
+            else:
+                self.assertTrue(False)
+
+    def test_chunked_infinite(self):
         it = itertools.cycle([1, 2, 3])
 
         count_checked = 0
