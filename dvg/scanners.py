@@ -5,6 +5,7 @@ import os
 import platform
 import re
 import subprocess
+import unicodedata
 
 
 _script_dir: str = os.path.dirname(os.path.realpath(__file__))
@@ -51,13 +52,8 @@ class Scanner:
         return self.to_lines(text)
 
     def to_lines(self, text: str) -> List[str]:
-        lines = text.split("\n")
-        r = []
-        for L in lines:
-            L = re.sub(r"[\x00-\x1f\x7f-\x9f]", "", L)
-            L = re.sub(r"\s+", " ", L)
-            r.append(L)
-        return r
+        text = unicodedata.normalize("NFKC", re.sub(r"[\x00-\x1f\x7f-\x9f]", "", text))
+        return text.split("\n")
 
     def _scan_i(self, file_name: str) -> str:
         assert file_name != "-"
@@ -119,15 +115,12 @@ else:
 
 
 def html_scan(file_name: str) -> str:
-    import bs4
+    import html2text
 
     with open_file(file_name) as inp:
         html_doc = inp.read()
-        soup = bs4.BeautifulSoup(html_doc, "html.parser")
-        for script in soup(["script", "style"]):
-            script.decompose()
-        texts = soup.find_all(text=True)
-    return "\n".join(texts)
+    text = html2text.html2text(html_doc)
+    return text
 
 
 def docx_scan(file_name: str) -> str:

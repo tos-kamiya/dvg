@@ -40,22 +40,13 @@ def load_tokenize_func(lang: Optional[str]) -> Callable[[str], Iterable[str]]:
         tokenizer = transformers.MecabTokenizer(do_lower_case=True)
         return tokenizer.tokenize
     elif lang == 'en':
-        import unicodedata
-
         import nltk
         try:
             nltk.word_tokenize('hello, world.')
         except LookupError:
             nltk.download('punkt')
 
-        # ref: https://stackoverflow.com/questions/517923/what-is-the-best-way-to-remove-accents-normalize-in-a-python-unicode-string
-        def strip_accents(s):
-            return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
-
-        def tokenize(text: str):
-            tokens = nltk.word_tokenize(text)
-            return [strip_accents(t).lower() for t in tokens]
-        return tokenize
+        return nltk.word_tokenize
     else:
         assert lang in ["en", "ja"]
 
