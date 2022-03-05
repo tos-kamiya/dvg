@@ -1,6 +1,6 @@
 from typing import Callable, Iterable, Iterator, List, Optional, Tuple
 
-from glob import glob
+from glob import iglob
 import importlib
 from multiprocessing import Pool
 from multiprocessing.shared_memory import SharedMemory
@@ -104,8 +104,7 @@ def expand_file_iter(target_files: Iterable[str]) -> Iterator[str]:
                 L = L.rstrip()
                 yield L
         elif "*" in f:
-            gfs = glob(f, recursive=True)
-            for gf in gfs:
+            for gf in iglob(f, recursive=True):
                 if os.path.isfile(gf):
                     yield gf
         else:
