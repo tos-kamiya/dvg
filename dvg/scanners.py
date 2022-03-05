@@ -6,6 +6,7 @@ import platform
 import re
 import subprocess
 import unicodedata
+import uuid
 
 
 _script_dir: str = os.path.dirname(os.path.realpath(__file__))
@@ -100,7 +101,7 @@ else:
     _system_temp_dir = tempfile.gettempdir()
 
     def pdf_scan(file_name: str) -> str:
-        tempf = os.path.join(_system_temp_dir, "%d.txt" % int.from_bytes(os.urandom(5), byteorder="little"))
+        tempf = os.path.join(_system_temp_dir, "%d.txt" % str(uuid.uuid4()))
         try:
             cmd = ["pdftotext.exe", file_name, tempf]
             p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
