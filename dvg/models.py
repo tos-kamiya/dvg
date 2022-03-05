@@ -28,18 +28,18 @@ class ModelSpec:
 
 def find_model_specs(model_name: str, model_dir: Optional[str] = None) -> Optional[ModelSpec]:
     if model_dir is None:
-        model_dir = os.path.join(_script_dir, 'models')
-    files = glob(os.path.join(model_dir, '**', model_name + ".model.toml"))
+        model_dir = os.path.join(_script_dir, "models")
+    files = glob(os.path.join(model_dir, "**", model_name + ".model.toml"))
     if len(files) == 1:
         toml_file = files[0]
-        with open(toml_file, 'r') as inp:
+        with open(toml_file, "r") as inp:
             text = inp.read()
         data = toml.loads(text)
-        model_type = data['type']
-        assert model_type == 'scdv'
-        tokenizer_name = data['tokenizer']
+        model_type = data["type"]
+        assert model_type == "scdv"
+        tokenizer_name = data["tokenizer"]
         dir = os.path.dirname(toml_file)
-        model_file_path = os.path.join(dir, data['file'])
+        model_file_path = os.path.join(dir, data["file"])
         model_spec = ModelSpec(model_type, tokenizer_name, model_file_path)
         return model_spec
     else:
@@ -49,15 +49,16 @@ def find_model_specs(model_name: str, model_dir: Optional[str] = None) -> Option
 def load_tokenize_func(lang: Optional[str]) -> Callable[[str], Iterable[str]]:
     if lang == "ja":
         import transformers
-        
+
         tokenizer = transformers.MecabTokenizer(do_lower_case=True)
         return tokenizer.tokenize
-    elif lang == 'en':
+    elif lang == "en":
         import nltk
+
         try:
-            nltk.word_tokenize('hello, world.')
+            nltk.word_tokenize("hello, world.")
         except LookupError:
-            nltk.download('punkt')
+            nltk.download("punkt")
 
         return nltk.word_tokenize
     else:
@@ -70,7 +71,7 @@ class Model:
 
     def find_oov_tokens(self, line: str) -> List[str]:
         raise NotImplementedError
-    
+
     def optimize_for_query_lines(self, query_lines: List[str]):
         raise NotImplementedError
 
@@ -79,7 +80,7 @@ class CombinedModel(Model):  # todo !! TEST !!
     def __init__(self, models: List[Model]):
         self.models = models
         self.vec_widths = None
-    
+
     def lines_to_vec(self, lines: List[str]) -> Vec:
         vecs = [model.lines_to_vec(lines) for model in self.models]
         if self.vec_widths is None:
@@ -111,7 +112,7 @@ class SCDVModel(Model):
     def lines_to_vec(self, lines: List[str]) -> Vec:
         if self.tokenizer is None:
             self.tokenizer = load_tokenize_func(self.tokenizer_name)
-        tokens = self.tokenizer('\n'.join(lines))
+        tokens = self.tokenizer("\n".join(lines))
         vec = self.embedder.embed(tokens)  # unit vector
         return vec
 
@@ -130,12 +131,12 @@ class SCDVModel(Model):
 def build_model_file(model_file: str):
     files = glob(model_file + ".part-*")
     for k, g in itertools.groupby(files, lambda f: os.path.splitext(f)[0]):
-        assert k.endswith('.pkl')
+        assert k.endswith(".pkl")
 
         print("> Build model files as a post installation hook.", file=sys.stderr)
 
         split_files = sorted(g)
-        with open(k, 'wb') as outp:
+        with open(k, "wb") as outp:
             for f in split_files:
-                with open(f, 'rb') as inp:
+                with open(f, "rb") as inp:
                     outp.write(inp.read())

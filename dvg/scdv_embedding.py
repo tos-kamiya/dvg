@@ -70,7 +70,7 @@ class SCDVEmbedding:
         self.cluster_idf_wvs = np.delete(self.cluster_idf_wvs, discarded_indices, axis=0)
         assert self.cluster_idf_wvs.shape[0] == len(self.word_to_index)
 
-        # remove cluster items with zero-weight        
+        # remove cluster items with zero-weight
         discarded_cluster_items = []
         len_idf_wvs = self.m_shape[1]
         cluster_size = self.m_shape[0]
@@ -80,16 +80,16 @@ class SCDVEmbedding:
 
         if len(discarded_cluster_items) == cluster_size:  # prevent all cluster items being discarded
             discarded_cluster_items.pop()
-        
+
         self.cluster_idf_wvs = np.delete(self.cluster_idf_wvs, discarded_cluster_items, axis=1)
         self.m_shape = (cluster_size - len(discarded_cluster_items), len_idf_wvs)
 
 
 def read_scdv_embedding(wordtopicvec_pack_file: str) -> SCDVEmbedding:
-    assert wordtopicvec_pack_file.endswith('.pkl')
-    with open(wordtopicvec_pack_file, 'rb') as inp:
+    assert wordtopicvec_pack_file.endswith(".pkl")
+    with open(wordtopicvec_pack_file, "rb") as inp:
         data = pickle.load(inp)
-    words = data['words']
-    clusters = data['clusters']
-    idf_wvs = data['idf_wvs']
+    words = data["words"]
+    clusters = data["clusters"]
+    idf_wvs = data["idf_wvs"]
     return SCDVEmbedding(words, clusters, idf_wvs)

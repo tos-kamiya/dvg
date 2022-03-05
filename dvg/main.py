@@ -92,12 +92,14 @@ Options:
   --excerpt-length=CHARS, -t CHARS      Length of the text to be excerpted [default: {dhc}].
   --header, -H                  Print the header line.
   --workers=WORKERS -j WORKERS  Worker process.
-""".format(dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dhc=DEFAULT_HEADLINE_CHARS)
+""".format(
+    dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dhc=DEFAULT_HEADLINE_CHARS
+)
 
 
 def expand_file_iter(target_files: Iterable[str]) -> Iterator[str]:
     for f in target_files:
-        if f == '-':
+        if f == "-":
             for L in sys.stdin:
                 L = L.rstrip()
                 yield L
@@ -163,8 +165,7 @@ def trim_search_results(search_results: List[Tuple[SPP, str]], top_n: int):
 
 def print_intermediate_search_result(search_results: List[Tuple[SPP, str]], done_files: int, elapsed_time: float):
     (_sim, pos, _para), f = search_results[0]
-    print("%s[%d done, %.2f docs/s] cur top-1: %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, f, pos[0] + 1, pos[1] + 1),
-        end='', file=sys.stderr)
+    print("%s[%d done, %.2f docs/s] cur top-1: %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, f, pos[0] + 1, pos[1] + 1), end="", file=sys.stderr)
 
 
 def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Model, a: CLArgs, verbose: bool = False) -> List[Tuple[SPP, str]]:
@@ -184,7 +185,7 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
                 continue  # for pos, para
             if a.exclude and includes_any_of_texts(para, a.exclude):
                 continue  # for pos, para
-            
+
             vec = model.lines_to_vec(para)
             sim = inner_product_n(vec, query_vec)
             if sim_min_req is not None and sim < sim_min_req:
@@ -204,7 +205,7 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
         if a.paragraph_search:
             spps = prune_overlapped_paragraphs(spps)  # remove paragraphs that overlap
             spps.sort(reverse=True)
-            del spps[a.top_n:]
+            del spps[a.top_n :]
         else:
             spps = [sorted(spps).pop()]  # extract only the most similar paragraphs in the file
 
@@ -215,7 +216,7 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
         trim_search_results(search_results, a.top_n)
         if verbose and dfi % 100 == 0:
             print_intermediate_search_result(search_results, dfi + 1, time() - t0)
-        
+
         if len(search_results) >= a.top_n:
             sim_min_req = search_results[-1][0][0]
 
@@ -239,6 +240,7 @@ def main():
     # A charm to make ANSI escape sequences work on Windows
     if platform.system() == "Windows":
         import colorama
+
         colorama.init()
 
     # command-line analysis
@@ -248,10 +250,10 @@ def main():
 
     # 1. model
     models: List[Model] = []
-    for m in a.model.split('+'):
+    for m in a.model.split("+"):
         s = find_model_specs(m)
         if s is None:
-            sys.exit('Error: model not found: %s' % m)
+            sys.exit("Error: model not found: %s" % m)
         tokenizer, model_file = s.tokenizer_name, s.model_file_path
         model = SCDVModel(tokenizer, model_file)
         models.append(model)
@@ -269,7 +271,7 @@ def main():
     shms = None
     try:
         # search for document files that are similar to the query
-        a.verbose and print("", end='', file=sys.stderr)
+        a.verbose and print("", end="", file=sys.stderr)
         search_results: List[Tuple[SPP, str]] = []
         try:
             if a.workers and a.workers >= 2:

@@ -34,6 +34,7 @@ class ScannerTest(unittest.TestCase):
     def test_pdf_file(self):
         from borb.pdf.canvas.layout.page_layout.multi_column_layout import SingleColumnLayout
         from borb.pdf.canvas.layout.text.paragraph import Paragraph
+
         try:
             from borb.pdf.document import Document  # borb v2.0.18
         except ImportError:
