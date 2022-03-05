@@ -30,15 +30,15 @@ class SCDVEmgeddingTest(unittest.TestCase):
 
         emb = SCDVEmbedding(words, clusters, idf_wvs)
 
-        vec = emb.embed(['a'], sparse=False)
+        vec = emb.embed(['a'])
         v = unit_vector(np.array([0, 1, 0, 0, 0, 0], dtype=np.float32))
         self.assertTrue(np.allclose(vec, v))
 
-        vec = emb.embed(['b'], sparse=False)
+        vec = emb.embed(['b'])
         v = unit_vector(np.array([0, 0, 0.25, 0.75, 0, 0], dtype=np.float32))
         self.assertTrue(np.allclose(vec, v))
 
-        vec = emb.embed(['c'], sparse=False)
+        vec = emb.embed(['c'])
         v = unit_vector(np.array([0, 0, 0, 0, 0.5, 0.5], dtype=np.float32))
         self.assertTrue(np.allclose(vec, v))
 

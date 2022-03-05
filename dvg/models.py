@@ -15,7 +15,18 @@ from .scdv_embedding import inner_product_n  # DO NOT remove this. re-exporting 
 _script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
-def find_model_specs(model_name: str, model_dir: Optional[str] = None) -> Optional[Tuple[str, str]]:
+class ModelSpec:
+    model_type: str
+    tokenizer_name: str
+    model_file_path: str
+
+    def __init__(self, model_type: str, tokenizer_name: str, model_file_path: str):
+        self.model_type = model_type
+        self.tokenizer_name = tokenizer_name
+        self.model_file_path = model_file_path
+
+
+def find_model_specs(model_name: str, model_dir: Optional[str] = None) -> Optional[ModelSpec]:
     if model_dir is None:
         model_dir = os.path.join(_script_dir, 'models')
     files = glob(os.path.join(model_dir, '**', model_name + ".model.toml"))
@@ -24,11 +35,13 @@ def find_model_specs(model_name: str, model_dir: Optional[str] = None) -> Option
         with open(toml_file, 'r') as inp:
             text = inp.read()
         data = toml.loads(text)
-        assert data['type'] == 'scdv'
+        model_type = data['type']
+        assert model_type == 'scdv'
         tokenizer_name = data['tokenizer']
         dir = os.path.dirname(toml_file)
-        file_path = os.path.join(dir, data['file'])
-        return tokenizer_name, file_path
+        model_file_path = os.path.join(dir, data['file'])
+        model_spec = ModelSpec(model_type, tokenizer_name, model_file_path)
+        return model_spec
     else:
         return None
 

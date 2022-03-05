@@ -1,3 +1,3 @@
 type = "scdv"
 tokenizer = "en"
-file = "en.v1.pkl"
+file = "en.v2.pkl"

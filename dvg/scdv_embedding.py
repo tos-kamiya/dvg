@@ -21,7 +21,7 @@ class SCDVEmbedding:
         self.cluster_idf_wvs = np.concatenate((clusters, idf_wvs), axis=1)
         self.m_shape = (clusters[0].size, idf_wvs[0].size)
 
-    def embed(self, text: Iterable[str], sparse: bool = True) -> Vec:
+    def embed(self, text: Iterable[str]) -> Vec:
         wf = Counter(text)
         m = np.zeros(self.m_shape, dtype=np.float32)
         cluster_size = self.m_shape[0]
@@ -39,13 +39,6 @@ class SCDVEmbedding:
         if n == 0.0:
             return vec
 
-        if sparse:
-            # (Note that this sparsification is different from the Mekara et al.'s original 
-            # https://arxiv.org/abs/1612.06778 . The original uses a threshold of 4% of max in all vectors 
-            # from the document set. In this process, the threshold is 8% of max in each vector.)
-            threshold = (abs(vec.max()) + abs(vec.min())) * 0.5 * 0.08  # 8%
-            vec[abs(vec) < threshold] = 0.0
-        
         return vec * (1.0 / n)
 
     def optimize_for_query_vec(self, query_vec: Vec):
@@ -57,7 +50,7 @@ class SCDVEmbedding:
         w2i = dict()
         ci = 0
         for i, w in idx_words:
-            vec = self.embed([w], sparse=False)
+            vec = self.embed([w])
             ip = inner_product_n(vec, query_vec)
             if ip == 0.0:
                 discarded_indices.append(i)

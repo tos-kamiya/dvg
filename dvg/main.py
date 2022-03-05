@@ -252,7 +252,7 @@ def main():
         s = find_model_specs(m)
         if s is None:
             sys.exit('Error: model not found: %s' % m)
-        tokenizer, model_file = s
+        tokenizer, model_file = s.tokenizer_name, s.model_file_path
         model = SCDVModel(tokenizer, model_file)
         models.append(model)
     if len(models) >= 2:
