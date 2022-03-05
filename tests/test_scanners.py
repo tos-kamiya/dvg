@@ -29,7 +29,7 @@ class ScannerTest(unittest.TestCase):
             p.write_text(content)
             read_content = dvg.scanners.html_scan(str(p))
             read_content = re.sub(r"\n+", r"\n", read_content).rstrip()
-            self.assertEqual(read_content, "html\n1st paragraph.\n2nd paragraph.")
+            self.assertEqual(read_content, "1st paragraph.\n2nd paragraph.")
 
     def test_pdf_file(self):
         from borb.pdf.canvas.layout.page_layout.multi_column_layout import SingleColumnLayout
