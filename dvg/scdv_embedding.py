@@ -75,7 +75,7 @@ class SCDVEmbedding:
         len_idf_wvs = self.m_shape[1]
         cluster_size = self.m_shape[0]
         for i in range(cluster_size):
-            if norm(query_vec[i * len_idf_wvs : (i + 1) * len_idf_wvs]) == 0.0:
+            if norm(query_vec[i * len_idf_wvs : (i + 1) * len_idf_wvs]) < 0.001 / cluster_size:
                 discarded_cluster_items.append(i)
 
         if len(discarded_cluster_items) == cluster_size:  # prevent all cluster items being discarded
