@@ -41,7 +41,7 @@ Verbose option. If specified, it will show the documents that have the highest s
 `--model=MODEL, -m MODEL`.  
 The available models are `en` (for English documents) and `ja` (for Japanese documents).
 
-`--top-n=NUM, -t NUM`  
+`--top-n=NUM, -n NUM`  
 Show top NUM documents as results. The default value is 20.
 Specify `0` to show all the documents searched, sorted by the degree of match to the query.
 
@@ -58,6 +58,16 @@ Only paragraphs that contain the specified string will be included in the search
 
 `--exclude=TEXT, -e TEXT`  
 Only paragraphs that do not contain the specified string will be included in the search results.
+
+`--min-length=CHARS, -l CHARS`  
+Paragraphs shorter than this value get their similarity values lowered. You can use this to exclude short paragraphs from the search results. The default value is 80.
+
+`--excerpt-length=CHARS, -t CHARS`  
+The length of the excerpt displayed in the rightmost column of the search results. The default value is 80.
+
+`--header, -H`  
+Add a heading line to the output.
+
 
 `--worker=NUM, -j NUM`  
 Number of worker processes. Option to run in parallel.
