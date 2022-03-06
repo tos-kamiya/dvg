@@ -79,7 +79,6 @@ Verboseオプションです。指定すると、検索の進行中に、その�
 
 | 状況 | 対策 |
 | --- | --- |
-| dvgの**インストールに失敗**する。「pdftotext」がインストールできないというエラーメッセージが出力される。 |  pdftotextは、pipコマンドだけではインストールできません。インストールの手順を参照してください。 |
 | dvgを実行しようとすると **「ModuleNotFoundError: No module named 'fugashi'」** といったエラーメッセージが出る。 | pipコマンドで`dvg[ja]`のように`[ja]`をつけて再インストールしてください。 |
 | dvgを実行中に **「UnicodeEncodeError: 'cp932' codec can't encode character ...」** とっいたエラーメッセージが出る。 | ファイルの文字コードに関するエラーです。Windows上で実行している場合は「NKFのインストール」を行ってみてください。 |
 
