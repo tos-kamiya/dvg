@@ -31,32 +31,33 @@ class ScannerTest(unittest.TestCase):
             read_content = re.sub(r"\n+", r"\n", read_content).rstrip()
             self.assertEqual(read_content, "1st paragraph.\n2nd paragraph.")
 
-    def test_pdf_file(self):
-        from borb.pdf.canvas.layout.page_layout.multi_column_layout import SingleColumnLayout
-        from borb.pdf.canvas.layout.text.paragraph import Paragraph
+    # !! dropped since PDF support is now optional.
+    # def test_pdf_file(self):
+    #     from borb.pdf.canvas.layout.page_layout.multi_column_layout import SingleColumnLayout
+    #     from borb.pdf.canvas.layout.text.paragraph import Paragraph
 
-        try:
-            from borb.pdf.document import Document  # borb v2.0.18
-        except ImportError:
-            from borb.pdf.document.document import Document  # borb v2.0.19
-        from borb.pdf.page.page import Page
-        from borb.pdf.pdf import PDF
+    #     try:
+    #         from borb.pdf.document import Document  # borb v2.0.18
+    #     except ImportError:
+    #         from borb.pdf.document.document import Document  # borb v2.0.19
+    #     from borb.pdf.page.page import Page
+    #     from borb.pdf.pdf import PDF
 
-        with tempfile.TemporaryDirectory() as tempdir:
-            p = Path(tempdir) / "a.pdf"
+    #     with tempfile.TemporaryDirectory() as tempdir:
+    #         p = Path(tempdir) / "a.pdf"
 
-            pdf = Document()
-            page = Page()
-            pdf.append_page(page)
-            layout = SingleColumnLayout(page)
-            layout.add(Paragraph("1st paragraph."))
-            layout.add(Paragraph("2nd paragraph."))
-            with open(p, "wb") as pdf_file_handle:
-                PDF.dumps(pdf_file_handle, pdf)
+    #         pdf = Document()
+    #         page = Page()
+    #         pdf.append_page(page)
+    #         layout = SingleColumnLayout(page)
+    #         layout.add(Paragraph("1st paragraph."))
+    #         layout.add(Paragraph("2nd paragraph."))
+    #         with open(p, "wb") as pdf_file_handle:
+    #             PDF.dumps(pdf_file_handle, pdf)
 
-            read_content = dvg.scanners.pdf_scan(str(p))
-            read_content = re.sub(r"\n+", r"\n", read_content).rstrip()
-            self.assertEqual(read_content, "1st paragraph.\n2nd paragraph.")
+    #         read_content = dvg.scanners.pdf_scan(str(p))
+    #         read_content = re.sub(r"\n+", r"\n", read_content).rstrip()
+    #         self.assertEqual(read_content, "1st paragraph.\n2nd paragraph.")
 
     # !! not working !! ref: https://stackoverflow.com/questions/58186869/how-to-fix-the-bug-modulenotfounderror-no-module-named-exceptions-when-impo
     # def test_docx_file(self):
