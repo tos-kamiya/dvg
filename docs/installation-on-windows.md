@@ -2,7 +2,25 @@
 
 `dvg` is compatible with Python versions `3.8` and `3.9` (cannot be installed with Python `3.10` because dvg requires PyTorch).
 
-(1) Install the dependencies.
+(1) Install `dvg`
+
+Download the file `dvg-xxxxxxxx-py3-none-any.whl` from the github release page and install it with pip.
+
+
+```sh
+pip install wheel
+pip install dvg-xxxxxxxx-py3-none-any.whl
+```
+
+If you want to use the Japanese model, change the last line of the above command line to the following:
+
+```sh
+pip install dvg-xxxxxxxx-py3-none-any.whl[ja]
+```
+
+(2) Install pdftotext. **(option)**
+
+If you want to search PDF files, please install `poppler`.
 
 If you are using [Chocolatey](https://chocolatey.org/), you can install Poppler as follows:
 
@@ -19,20 +37,3 @@ Then, add a directory where `pdftotext.exe` is located to your PATH. For example
 Make sure you can run pdftotext from a DOS prompt, etc.
 
 ![](images/win-pdftotext.png)
-
-(2) Install `dvg`
-
-Download the file `dvg-xxxxxxxx-py3-none-any.whl` from the github release page and install it with pip.
-
-
-```sh
-pip install wheel
-pip install dvg-xxxxxxxx-py3-none-any.whl
-```
-
-If you want to use the Japanese model, change the last line of the above command line to the following:
-
-```sh
-pip install dvg-xxxxxxxx-py3-none-any.whl[ja]
-```
-

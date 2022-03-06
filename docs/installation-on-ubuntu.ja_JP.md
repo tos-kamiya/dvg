@@ -4,14 +4,14 @@
 
 Pythonのバージョン`3.8`と`3.9`に対応しています(PyTorchが必要であるためPython `3.10`ではインストールできません）。
 
-(1) 依存ライブラリを`apt`や`pip'を使ってインストール
-
-**重要:** dvgのインストールの前に、`pdftotext`を記述 https://github.com/jalan/pdftotext に従ってインストールしてください。
-
-(2) `dvg`をインストール
+(1) `dvg`をインストール
 
 githubのリリースページからファイル`dvg-xxxxxxxx-py3-none-any.whl`をダウンロードして、pipでインストールしてください。
 
 ```sh
 pip3 install dvg-xxxxxxxx-py3-none-any.whl[ja]
 ```
+
+(2) pdftotextをインストール **（任意)**
+
+PDFファイルを検索対象としたい場合には、`pdftotext`を記述 https://github.com/jalan/pdftotext に従ってインストールしてください。
