@@ -81,7 +81,10 @@ class Scanner:
 if platform.system() != "Windows":
 
     def pdf_scan(file_name: str) -> str:
-        import pdftotext
+        try:
+            import pdftotext
+        except ImportError as e:
+            raise ScanError('Error: pdftotext is not installed.')
 
         try:
             with open(file_name, "rb") as f:
@@ -105,14 +108,17 @@ else:
         try:
             cmd = ["pdftotext.exe", file_name, tempf]
             p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except FileNotFoundError as e:
+            raise ScanError('Error: pdftotext is not installed.')
+        else:
             if p.returncode != 0:
                 raise ScanError("ScanError: %s, file: %s" % (p.stderr.decode("utf-8").rstrip(), repr(file_name)))
             with open_file(tempf) as f:
                 text = f.read()
+            return text
         finally:
             if os.path.exists(tempf):
                 os.remove(tempf)
-        return text
 
 
 def html_scan(file_name: str) -> str:

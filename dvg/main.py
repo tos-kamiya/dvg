@@ -165,8 +165,8 @@ def trim_search_results(search_results: List[SPPD], top_n: int):
 
 
 def print_intermediate_search_result(search_results: List[SPPD], done_files: int, elapsed_time: float):
-    _sim, pos, _para, df = search_results[0]
-    print("%s[%d done, %.2f docs/s] cur top-1: %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, df, pos[0] + 1, pos[1] + 1), end="", file=sys.stderr)
+    sim, pos, _para, df = search_results[0]
+    print("%s[%d done, %.2f docs/s] cur top-1: %.4f %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, sim, df, pos[0] + 1, pos[1] + 1), end="", file=sys.stderr)
 
 
 def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Model, a: CLArgs) -> List[SPPD]:
@@ -318,7 +318,7 @@ def main():
                 break
             para = lines[b:e]
             excerpt = excerpt_text(para, model.lines_to_vec, query_vec, a.excerpt_length)
-            print("%g\t%d\t%s:%d-%d\t%s" % (sim, sum(len(L) for L in para), df, b + 1, e + 1, excerpt))
+            print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, sum(len(L) for L in para), df, b + 1, e + 1, excerpt))
     finally:
         if shms is not None:
             model_shared_close(shms)
