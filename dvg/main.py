@@ -13,7 +13,7 @@ from docopt import docopt
 from init_attrs_with_kwargs import InitAttrsWKwArgs
 import numpy as np
 
-from .iter_funcs import chunked, ranges_overwrapping
+from .iter_funcs import chunked_iter, ranges_overwrapping
 from .models import Model, SCDVModel, CombinedModel, Vec, inner_product_n, find_model_specs
 from . import scanners
 from .text_funcs import extract_para_iter, includes_all_texts, includes_any_of_texts
@@ -112,14 +112,14 @@ def expand_file_iter(target_files: Iterable[str]) -> Iterator[str]:
 
 
 Pos = Tuple[int, int]
-SPP = Tuple[float, Pos, List[str]]
+SPPD = Tuple[float, Pos, List[str], str]
 
 
-def prune_overlapped_paragraphs(spps: List[SPP]) -> List[SPP]:
-    if not spps:
-        return spps
+def prune_overlapped_paragraphs(sppds: List[SPPD]) -> List[SPPD]:
+    if not sppds:
+        return sppds
     dropped_index_set = set()
-    for i, (spp1, spp2) in enumerate(zip(spps, spps[1:])):
+    for i, (spp1, spp2) in enumerate(zip(sppds, sppds[1:])):
         ip1, sr1 = spp1[0], spp1[1]
         ip2, sr2 = spp2[0], spp2[1]
         if ranges_overwrapping(sr1, sr2):
@@ -127,7 +127,7 @@ def prune_overlapped_paragraphs(spps: List[SPP]) -> List[SPP]:
                 dropped_index_set.add(i)
             else:
                 dropped_index_set.add(i + 1)
-    return [ipsrls for i, ipsrls in enumerate(spps) if i not in dropped_index_set]
+    return [ipsrls for i, ipsrls in enumerate(sppds) if i not in dropped_index_set]
 
 
 def excerpt_text(lines: List[str], lines_to_vec: Callable[[List[str]], Vec], query_vec: Vec, length_to_excerpt: int) -> str:
@@ -141,6 +141,8 @@ def excerpt_text(lines: List[str], lines_to_vec: Callable[[List[str]], Vec], que
     max_ip_data = None
     for p in range(len_lines):
         para_textlen = len(lines[p])
+        if para_textlen == 0:
+            continue  # for p
         q = p + 1
         while q < len_lines and para_textlen < length_to_excerpt:
             para_textlen += len(lines[q])
@@ -151,34 +153,33 @@ def excerpt_text(lines: List[str], lines_to_vec: Callable[[List[str]], Vec], que
             max_ip_data = ip, (p, q)
     assert max_ip_data is not None
 
-    sr = max_ip_data[1]
-    excerpt = "|".join(lines[sr[0] : sr[1]])
+    b, e = max_ip_data[1]
+    excerpt = "|".join(lines[b:e])
     excerpt = excerpt[:length_to_excerpt]
     return excerpt
 
 
-def trim_search_results(search_results: List[Tuple[SPP, str]], top_n: int):
+def trim_search_results(search_results: List[SPPD], top_n: int):
     search_results.sort(reverse=True)
     del search_results[top_n:]
 
 
-def print_intermediate_search_result(search_results: List[Tuple[SPP, str]], done_files: int, elapsed_time: float):
-    (_sim, pos, _para), f = search_results[0]
-    print("%s[%d done, %.2f docs/s] cur top-1: %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, f, pos[0] + 1, pos[1] + 1), end="", file=sys.stderr)
+def print_intermediate_search_result(search_results: List[SPPD], done_files: int, elapsed_time: float):
+    _sim, pos, _para, df = search_results[0]
+    print("%s[%d done, %.2f docs/s] cur top-1: %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, df, pos[0] + 1, pos[1] + 1), end="", file=sys.stderr)
 
 
-def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Model, a: CLArgs, verbose: bool = False) -> List[Tuple[SPP, str]]:
+def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Model, a: CLArgs) -> List[SPPD]:
     scanner = scanners.Scanner()
 
-    t0 = time()
-    search_results: List[Tuple[SPP, str]] = []
+    search_results: List[SPPD] = []
     sim_min_req: Optional[float] = None
-    for dfi, df in enumerate(doc_files):
+    for df in doc_files:
         # read lines from document file
         lines = scanner.scan(df)
 
         # for each paragraph in the file, calculate the similarity to the query
-        spps: List[SPP] = []
+        sppds: List[SPPD] = []
         for pos, para in extract_para_iter(lines, a.window):
             if a.include and not includes_all_texts(para, a.include):
                 continue  # for pos, para
@@ -197,33 +198,31 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
                     if sim_min_req is not None and sim < sim_min_req:
                         continue  # for pos, para
 
-            spps.append((sim, pos, lines))
-        if not spps:
-            continue  # for dfi, df
+            sppds.append((sim, pos, lines, df))
+        if not sppds:
+            continue  # for df
 
         if a.paragraph_search:
-            spps = prune_overlapped_paragraphs(spps)  # remove paragraphs that overlap
-            spps.sort(reverse=True)
-            del spps[a.top_n :]
+            sppds = prune_overlapped_paragraphs(sppds)  # remove paragraphs that overlap
+            sppds.sort(reverse=True)
+            del sppds[a.top_n :]
         else:
-            spps = [sorted(spps).pop()]  # extract only the most similar paragraphs in the file
+            sppds = [max(sppds)]  # extract only the most similar paragraphs in the file
 
         # update search results
-        if sim_min_req is None or spps[0][0] >= sim_min_req:
-            search_results.extend((spp, df) for spp in spps)
-
-        trim_search_results(search_results, a.top_n)
-        if verbose and dfi % 100 == 0:
-            print_intermediate_search_result(search_results, dfi + 1, time() - t0)
-
-        if len(search_results) >= a.top_n:
-            sim_min_req = search_results[-1][0][0]
+        if sim_min_req is None or sppds[0][0] >= sim_min_req:
+            search_results.extend(sppds)
+            trim_search_results(search_results, a.top_n)
+            if len(search_results) >= a.top_n:
+                sim_min_req = search_results[-1][0]
 
     return search_results
 
 
-def find_similar_paragraphs_i(a):
-    return find_similar_paragraphs(*a)
+def find_similar_paragraphs_i(arg_tuple):
+    # (query_vec, dfs, model, a) = arg_tuple
+    r = find_similar_paragraphs(*arg_tuple)
+    return r, arg_tuple[1]
 
 
 def main():
@@ -266,41 +265,55 @@ def main():
     model.optimize_for_query_lines(query_lines)
     query_vec = model.lines_to_vec(query_lines)
 
+    count_document_files = 0
     chunk_size = 10000
     shms = None
     try:
         # search for document files that are similar to the query
         a.verbose and print("", end="", file=sys.stderr)
-        search_results: List[Tuple[SPP, str]] = []
+        search_results: List[SPPD] = []
+        t0 = time()
         try:
             if a.workers and a.workers >= 2:
                 shms = model_shared(model)  # load the model into shared memory for process parallel
-                args_it = ((query_vec, dfs, model, a) for dfs in chunked(expand_file_iter(a.file), chunk_size))
-                t0 = time()
+                args_it = ((query_vec, dfs, model, a) for dfs in chunked_iter(expand_file_iter(a.file), chunk_size))
                 with Pool(processes=a.workers) as pool:
-                    for ci, srs in enumerate(pool.imap_unordered(find_similar_paragraphs_i, args_it)):
+                    for srs, dfs in pool.imap_unordered(find_similar_paragraphs_i, args_it):
                         search_results.extend(srs)
                         trim_search_results(search_results, a.top_n)
+                        count_document_files += len(dfs)
                         if a.verbose:
-                            print_intermediate_search_result(search_results, (ci + 1) * chunk_size, time() - t0)
+                            print_intermediate_search_result(search_results, count_document_files, time() - t0)
             else:
-                df_it = expand_file_iter(a.file)
-                search_results: List[Tuple[SPP, str]] = find_similar_paragraphs(query_vec, df_it, model, a, verbose=a.verbose)
+                for dfs in chunked_iter(expand_file_iter(a.file), chunk_size):
+                    search_results.extend(find_similar_paragraphs(query_vec, dfs, model, a))
+                    trim_search_results(search_results, a.top_n)
+                    count_document_files += len(dfs)
+                    if a.verbose:
+                        print_intermediate_search_result(search_results, count_document_files, time() - t0)
         except FileNotFoundError as e:
             a.verbose and print(_ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr)
             sys.exit(str(e))
         except KeyboardInterrupt:
-            a.verbose and print(_ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr)
-            print("> Interrupted. Shows the search results up to now.", file=sys.stderr)
+            if a.verbose:
+                print(
+                    _ANSI_ESCAPE_CLEAR_CUR_LINE +
+                    "> Interrupted. Shows the search results up to now.\n" +
+                    "> number of document files: %d" % count_document_files, 
+                    file=sys.stderr)
+
         else:
-            a.verbose and print(_ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr)
+            if a.verbose:
+                print(
+                    _ANSI_ESCAPE_CLEAR_CUR_LINE +
+                    "> number of document files: %d" % count_document_files, 
+                    file=sys.stderr)
 
         # output search results
         trim_search_results(search_results, a.top_n)
         if a.header:
             print("\t".join(["sim", "chars", "location", "text"]))
-        for spp, df in search_results:
-            sim, (b, e), lines = spp
+        for sim, (b, e), lines, df in search_results:
             if sim < 0.0:
                 break
             para = lines[b:e]

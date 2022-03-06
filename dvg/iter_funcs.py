@@ -24,12 +24,15 @@ def ranges_overwrapping(range1: Tuple[int, int], range2: Tuple[int, int]) -> boo
         return range1[0] < range2[1]
 
 
-def chunked(it: Iterable[T], chunk_size: int = 10000) -> Iterator[List[T]]:
-    found_items = []
-    for f in it:
-        found_items.append(f)
-        if len(found_items) >= chunk_size:
-            yield found_items
-            found_items = []
-    if found_items:
-        yield found_items
+def chunked_iter(it: Iterable[T], max_chunk_size: int) -> Iterator[List[T]]:
+    assert max_chunk_size >= 1
+    chunk_size = 10
+    chunk = []
+    for item in it:
+        chunk.append(item)
+        if len(chunk) >= chunk_size:
+            yield chunk
+            chunk[:] = []
+            chunk_size = min(max_chunk_size, chunk_size * 3 // 2)
+    if chunk:
+        yield chunk

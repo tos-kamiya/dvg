@@ -52,7 +52,7 @@ class SCDVEmbedding:
         for i, w in idx_words:
             vec = self.embed([w])
             ip = inner_product_n(vec, query_vec)
-            if ip == 0.0:
+            if abs(ip) < 0.001:
                 discarded_indices.append(i)
             else:
                 w2i[w] = ci

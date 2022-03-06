@@ -53,8 +53,8 @@ class Scanner:
         return self.to_lines(text)
 
     def to_lines(self, text: str) -> List[str]:
-        text = unicodedata.normalize("NFKC", re.sub(r"[\x00-\x1f\x7f-\x9f]", "", text))
-        return text.split("\n")
+        text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x20\x7f-\x9f]+", " ", unicodedata.normalize("NFKC", text))
+        return [L.strip() for L in text.split("\n")]
 
     def _scan_i(self, file_name: str) -> str:
         assert file_name != "-"

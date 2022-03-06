@@ -40,34 +40,24 @@ class IterFuncsTest(unittest.TestCase):
         assert tc >= 100
         assert fc >= 100
 
-    def test_chunked_(self):
-        for i, c in enumerate(chunked(range(6), 3)):
-            if i == 0:
-                self.assertSequenceEqual(c, [0, 1, 2])
-            elif i == 1:
-                self.assertSequenceEqual(c, [3, 4, 5])
-            else:
-                self.assertTrue(False)
+    def test_chunked_iter(self):
+        it = range(1000)
+        last_chunk_size = 0
+        r = []
+        for c in chunked_iter(it, 100):
+            self.assertTrue(len(c) >= last_chunk_size)
+            self.assertTrue(len(c) <= 100)
+            r.extend(c)
+        self.assertSequenceEqual(r, list(range(1000)))
 
-        for i, c in enumerate(chunked(range(7), 3)):
-            if i == 0:
-                self.assertSequenceEqual(c, [0, 1, 2])
-            elif i == 1:
-                self.assertSequenceEqual(c, [3, 4, 5])
-            elif i == 2:
-                self.assertSequenceEqual(c, [6])
-            else:
-                self.assertTrue(False)
-
-    def test_chunked_infinite(self):
-        it = itertools.cycle([1, 2, 3])
-
-        count_checked = 0
-        for c in chunked(it, 3):
-            self.assertSequenceEqual(c, [1, 2, 3])
-            count_checked += 1
-            if count_checked >= 3:
-                break
+        it = range(1001)
+        last_chunk_size = 0
+        r = []
+        for c in chunked_iter(it, 100):
+            self.assertTrue(len(c) >= last_chunk_size)
+            self.assertTrue(len(c) <= 100)
+            r.extend(c)
+        self.assertSequenceEqual(r, list(range(1001)))
 
 
 if __name__ == "__main__":
