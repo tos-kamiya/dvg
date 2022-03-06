@@ -151,6 +151,8 @@ def excerpt_text(lines: List[str], lines_to_vec: Callable[[List[str]], Vec], que
         ip = inner_product_n(vec, query_vec)
         if max_ip_data is None or ip > max_ip_data[0]:
             max_ip_data = ip, (p, q)
+        if q == len_lines:
+            break  # for p
     assert max_ip_data is not None
 
     b, e = max_ip_data[1]
@@ -197,7 +199,7 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
                     sim *= r
                     if sim_min_req is not None and sim < sim_min_req:
                         continue  # for pos, para
-
+            
             sppds.append((sim, pos, lines, df))
         if not sppds:
             continue  # for df
