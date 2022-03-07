@@ -13,10 +13,10 @@ from docopt import docopt
 from init_attrs_with_kwargs import InitAttrsWKwArgs
 import numpy as np
 
-from .iter_funcs import chunked_iter, ranges_overwrapping
+from .iter_funcs import chunked_iter, ranges_overwrapping, sliding_window_iter
 from .models import Model, SCDVModel, CombinedModel, Vec, inner_product_n, find_model_specs
 from . import scanners
-from .text_funcs import extract_para_iter, includes_all_texts, includes_any_of_texts
+from .text_funcs import includes_all_texts, includes_any_of_texts
 
 
 _script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -138,7 +138,7 @@ def excerpt_text(lines: List[str], lines_to_vec: Callable[[List[str]], Vec], que
         return lines[0][:length_to_excerpt]
 
     len_lines = len(lines)
-    max_ip_data = None
+    max_sim_data = None
     for p in range(len_lines):
         para_textlen = len(lines[p])
         if para_textlen == 0:
@@ -148,14 +148,14 @@ def excerpt_text(lines: List[str], lines_to_vec: Callable[[List[str]], Vec], que
             para_textlen += len(lines[q])
             q += 1
         vec = lines_to_vec(lines[p:q])
-        ip = inner_product_n(vec, query_vec)
-        if max_ip_data is None or ip > max_ip_data[0]:
-            max_ip_data = ip, (p, q)
+        sim = inner_product_n(vec, query_vec)
+        if max_sim_data is None or sim > max_sim_data[0]:
+            max_sim_data = sim, (p, q)
         if q == len_lines:
             break  # for p
-    assert max_ip_data is not None
+    assert max_sim_data is not None
 
-    b, e = max_ip_data[1]
+    b, e = max_sim_data[1]
     excerpt = "|".join(lines[b:e])
     excerpt = excerpt[:length_to_excerpt]
     return excerpt
@@ -167,43 +167,45 @@ def trim_search_results(search_results: List[SPPD], top_n: int):
 
 
 def print_intermediate_search_result(search_results: List[SPPD], done_files: int, elapsed_time: float):
-    sim, pos, _para, df = search_results[0]
-    print("%s[%d done, %.2f docs/s] cur top-1: %.4f %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, sim, df, pos[0] + 1, pos[1] + 1), end="", file=sys.stderr)
+    if search_results:
+        sim, pos, _para, df = search_results[0]
+        print("%s[%d done, %.2f docs/s] cur top-1: %.4f %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, sim, df, pos[0] + 1, pos[1]), end="", file=sys.stderr)
 
 
 def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Model, a: CLArgs) -> List[SPPD]:
     scanner = scanners.Scanner()
 
     search_results: List[SPPD] = []
-    sim_min_req: Optional[float] = None
+    sim_min_req = 0.0
     for df in doc_files:
         # read lines from document file
         lines = scanner.scan(df)
 
         # for each paragraph in the file, calculate the similarity to the query
         sppds: List[SPPD] = []
-        for pos, para in extract_para_iter(lines, a.window):
-            if a.include and not includes_all_texts(para, a.include):
-                continue  # for pos, para
-            if a.exclude and includes_any_of_texts(para, a.exclude):
+        for pos in sliding_window_iter(len(lines), a.window):
+            para = lines[pos[0]:pos[1]]
+            if a.include and not includes_all_texts(para, a.include) or a.exclude and includes_any_of_texts(para, a.exclude):
                 continue  # for pos, para
 
             vec = model.lines_to_vec(para)
             sim = inner_product_n(vec, query_vec)
-            if sim_min_req is not None and sim < sim_min_req:
+            if sim < sim_min_req:
                 continue  # for pos, para
 
             if a.min_length > 0:  # penalty for short paragraphs
                 r = sum(len(L) for L in para) / a.min_length
                 if r < 1.0:
                     sim *= r
-                    if sim_min_req is not None and sim < sim_min_req:
+                    if sim < sim_min_req:
                         continue  # for pos, para
             
             sppds.append((sim, pos, lines, df))
+
         if not sppds:
             continue  # for df
 
+        # pick up paragraphs for the file
         if a.paragraph_search:
             sppds = prune_overlapped_paragraphs(sppds)  # remove paragraphs that overlap
             sppds.sort(reverse=True)
@@ -212,12 +214,12 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
             sppds = [max(sppds)]  # extract only the most similar paragraphs in the file
 
         # update search results
-        if sim_min_req is None or sppds[0][0] >= sim_min_req:
-            search_results.extend(sppds)
+        search_results.extend(sppds)
+        if len(search_results) >= a.top_n * (2 if sim_min_req > 0.0 else 1):
             trim_search_results(search_results, a.top_n)
-            if len(search_results) >= a.top_n:
-                sim_min_req = search_results[-1][0]
+            sim_min_req = search_results[-1][0]
 
+    trim_search_results(search_results, a.top_n)
     return search_results
 
 
@@ -320,7 +322,7 @@ def main():
                 break
             para = lines[b:e]
             excerpt = excerpt_text(para, model.lines_to_vec, query_vec, a.excerpt_length)
-            print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, sum(len(L) for L in para), df, b + 1, e + 1, excerpt))
+            print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, sum(len(L) for L in para), df, b + 1, e, excerpt))
     finally:
         if shms is not None:
             model_shared_close(shms)

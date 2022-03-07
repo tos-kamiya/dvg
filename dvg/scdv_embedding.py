@@ -12,7 +12,14 @@ Vec = NewType("Vec", np.ndarray)
 
 
 def inner_product_n(dv: Vec, pv: Vec) -> float:
-    return float(np.inner(dv, pv))  # debug
+    return float(np.inner(dv, pv))
+
+
+def sparse(v: Vec) -> Vec:
+    v = v.copy()
+    threshold = (abs(np.max(v)) + abs(np.min(v))) * 0.5 * 0.02
+    v[abs(v) < threshold] = 0.0
+    return v
 
 
 class SCDVEmbedding:
@@ -23,26 +30,30 @@ class SCDVEmbedding:
 
     def embed(self, text: Iterable[str]) -> Vec:
         wf = Counter(text)
-        m = np.zeros(self.m_shape, dtype=np.float32)
+        v = np.zeros(self.m_shape, dtype=np.float32)
         cluster_size = self.m_shape[0]
         for word, freq in wf.items():
             i = self.word_to_index.get(word, None)
             if i is not None:
                 cv = self.cluster_idf_wvs[i]
                 if freq > 1:
-                    m += freq * np.outer(cv[:cluster_size], cv[cluster_size:])
+                    v += np.outer(freq * cv[:cluster_size], cv[cluster_size:])  # here, `cv[:cluster_size]` is shorter than `cv[cluster_size:]``
                 else:
-                    m += np.outer(cv[:cluster_size], cv[cluster_size:])
-        vec = m.flatten()
+                    v += np.outer(cv[:cluster_size], cv[cluster_size:])
 
-        n = norm(vec)
+        v = v.reshape(-1)
+
+        n = norm(v)
         if n == 0.0:
-            return vec
+            return v
 
-        return vec * (1.0 / n)
+        v *= 1.0 / n
+        return v
 
     def optimize_for_query_vec(self, query_vec: Vec):
         assert query_vec.size == self.m_shape[0] * self.m_shape[1]
+
+        query_vec = sparse(query_vec)
 
         # remove words with zero-weight
         idx_words = sorted((i, w) for w, i in self.word_to_index.items())
@@ -51,8 +62,8 @@ class SCDVEmbedding:
         ci = 0
         for i, w in idx_words:
             vec = self.embed([w])
-            ip = inner_product_n(vec, query_vec)
-            if abs(ip) < 0.001:
+            sim = inner_product_n(vec, query_vec)
+            if abs(sim) < 0.001:
                 discarded_indices.append(i)
             else:
                 w2i[w] = ci
