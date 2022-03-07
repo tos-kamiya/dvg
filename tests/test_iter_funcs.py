@@ -59,6 +59,44 @@ class IterFuncsTest(unittest.TestCase):
             r.extend(c)
         self.assertSequenceEqual(r, list(range(1001)))
 
+    def test_sliding_window_iter(self):
+        range_length = 6
+        poss = list(sliding_window_iter(range_length, 1))
+        self.assertSequenceEqual(
+            poss,
+            [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6)],
+        )
+
+        poss = list(sliding_window_iter(range_length, 2))
+        self.assertSequenceEqual(
+            poss,
+            [(0, 2), (1, 3), (2, 4), (3, 5), (4, 6)],
+        )
+
+        poss = list(sliding_window_iter(range_length, 3))
+        self.assertSequenceEqual(
+            poss,
+            [(0, 3), (1, 4), (2, 5), (3, 6)],
+        )
+
+        poss = list(sliding_window_iter(range_length, 4))
+        self.assertSequenceEqual(
+            poss,
+            [(0, 4), (2, 6)],
+        )
+
+        poss = list(sliding_window_iter(range_length, 5))
+        self.assertSequenceEqual(
+            poss,
+            [(0, 5), (2, 6)],
+        )
+
+        for i in range(6, 13):
+            poss = list(sliding_window_iter(range_length, i))
+            self.assertSequenceEqual(
+                poss,
+                [(0, 6)],
+            )
 
 if __name__ == "__main__":
     unittest.main()
