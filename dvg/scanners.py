@@ -53,7 +53,7 @@ class Scanner:
         return self.to_lines(text)
 
     def to_lines(self, text: str) -> List[str]:
-        text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x20\x7f-\x9f]+", " ", unicodedata.normalize("NFKC", text))
+        text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x20\x7f-\x9f]+", " ", unicodedata.normalize("NFKD", text))
         return [L.strip() for L in text.split("\n")]
 
     def _scan_i(self, file_name: str) -> str:

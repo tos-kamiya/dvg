@@ -1,4 +1,4 @@
-from typing import Iterator, List, Tuple
+from typing import Iterable, List, Tuple
 
 
 def includes_all_texts(lines: List[str], texts: List[str]) -> bool:
@@ -18,3 +18,21 @@ def includes_any_of_texts(lines: List[str], texts: List[str]) -> bool:
             if L.find(text) >= 0:
                 return True
     return False
+
+
+def split_posi_nega_words(raw_words: Iterable[str]) -> Tuple[List[str], List[str]]:
+    posi_raw_words = []
+    nega_raw_words = []
+    for rw in raw_words:
+        if rw.startswith("-"):
+            w = rw[1:]
+            if w:
+                nega_raw_words.append(rw[1:])
+        elif rw.startswith("+"):
+            w = rw[1:]
+            if w:
+                posi_raw_words.append(rw[1:])
+        else:
+            if rw:
+                posi_raw_words.append(rw)
+    return posi_raw_words, nega_raw_words

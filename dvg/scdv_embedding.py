@@ -1,4 +1,5 @@
-from typing import Iterable, List, NewType
+from operator import neg
+from typing import Iterable, List, NewType, Optional
 
 from collections import Counter
 import pickle
@@ -22,14 +23,23 @@ def sparse(v: Vec) -> Vec:
     return v
 
 
+class NPWord:
+    nega_posi: int  # +1 or -1
+    word: str
+
+
 class SCDVEmbedding:
     def __init__(self, words: List[str], clusters: np.ndarray, idf_wvs: np.ndarray):
         self.word_to_index = dict((w, i) for i, w in enumerate(words))
         self.cluster_idf_wvs = np.concatenate((clusters, idf_wvs), axis=1)
         self.m_shape = (clusters[0].size, idf_wvs[0].size)
 
-    def embed(self, text: Iterable[str]) -> Vec:
-        wf = Counter(text)
+    def embed(self, words: Iterable[str], negative_words: Optional[Iterable[str]] = None) -> Vec:
+        wf = Counter(words)
+        if negative_words is not None:
+            for nw in negative_words:
+                wf[nw] -= 1
+
         v = np.zeros(self.m_shape, dtype=np.float32)
         cluster_size = self.m_shape[0]
         for word, freq in wf.items():
