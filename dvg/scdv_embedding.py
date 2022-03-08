@@ -34,11 +34,8 @@ class SCDVEmbedding:
         self.cluster_idf_wvs = np.concatenate((clusters, idf_wvs), axis=1)
         self.m_shape = (clusters[0].size, idf_wvs[0].size)
 
-    def embed(self, words: Iterable[str], negative_words: Optional[Iterable[str]] = None) -> Vec:
+    def embed(self, words: Iterable[str]) -> Vec:
         wf = Counter(words)
-        if negative_words is not None:
-            for nw in negative_words:
-                wf[nw] -= 1
 
         v = np.zeros(self.m_shape, dtype=np.float32)
         cluster_size = self.m_shape[0]
