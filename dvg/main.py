@@ -50,7 +50,7 @@ def model_shared_close(shms):
 VERSION = importlib.metadata.version("dvg")
 DEFAULT_TOP_N = 20
 DEFAULT_WINDOW_SIZE = 20
-DEFAULT_HEADLINE_CHARS = 80
+DEFAULT_EXCERPT_CHARS = 80
 DEFAULT_PREFER_LONGER_THAN = 80
 _ANSI_ESCAPE_CLEAR_CUR_LINE = "\x1b[1K\n\x1b[1A"
 
@@ -89,11 +89,11 @@ Options:
   --include=TEXT, -i TEXT       Requires containing the specified text.
   --exclude=TEXT, -e TEXT       Requires not containing the specified text.
   --min-length=CHARS, -l CHARS  Paragraphs shorter than this get a penalty [default: {dplt}].
-  --excerpt-length=CHARS, -t CHARS      Length of the text to be excerpted [default: {dhc}].
+  --excerpt-length=CHARS, -t CHARS      Length of the text to be excerpted [default: {dec}].
   --header, -H                  Print the header line.
   --workers=WORKERS -j WORKERS  Worker process.
 """.format(
-    dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dhc=DEFAULT_HEADLINE_CHARS
+    dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dec=DEFAULT_EXCERPT_CHARS
 )
 
 
@@ -130,7 +130,7 @@ def prune_overlapped_paragraphs(sppds: List[SPPD]) -> List[SPPD]:
     return [ipsrls for i, ipsrls in enumerate(sppds) if i not in dropped_index_set]
 
 
-def excerpt_text(lines: List[str], lines_to_vec: Callable[[List[str]], Vec], query_vec: Vec, length_to_excerpt: int) -> str:
+def excerpt_text(lines: List[str], similarity_to_lines: Callable[[List[str]], float], length_to_excerpt: int) -> str:
     if not lines:
         return ""
 
@@ -147,8 +147,7 @@ def excerpt_text(lines: List[str], lines_to_vec: Callable[[List[str]], Vec], que
         while q < len_lines and para_textlen < length_to_excerpt:
             para_textlen += len(lines[q])
             q += 1
-        vec = lines_to_vec(lines[p:q])
-        sim = inner_product_n(vec, query_vec)
+        sim = similarity_to_lines(lines[p:q])
         if max_sim_data is None or sim > max_sim_data[0]:
             max_sim_data = sim, (p, q)
         if q == len_lines:
@@ -172,7 +171,7 @@ def print_intermediate_search_result(search_results: List[SPPD], done_files: int
         print("%s[%d done, %.2f docs/s] cur top-1: %.4f %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, sim, df, pos[0] + 1, pos[1]), end="", file=sys.stderr)
 
 
-def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Model, a: CLArgs) -> List[SPPD]:
+def find_similar_paragraphs(doc_files: Iterable[str], model: Model, a: CLArgs) -> List[SPPD]:
     scanner = scanners.Scanner()
 
     search_results: List[SPPD] = []
@@ -188,8 +187,7 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
             if a.include and not includes_all_texts(para, a.include) or a.exclude and includes_any_of_texts(para, a.exclude):
                 continue  # for pos, para
 
-            vec = model.lines_to_vec(para)
-            sim = inner_product_n(vec, query_vec)
+            sim = model.similarity_to_lines(para)
             if sim < sim_min_req:
                 continue  # for pos, para
 
@@ -224,9 +222,9 @@ def find_similar_paragraphs(query_vec: Vec, doc_files: Iterable[str], model: Mod
 
 
 def find_similar_paragraphs_i(arg_tuple):
-    # (query_vec, dfs, model, a) = arg_tuple
+    # (dfs, model, a) = arg_tuple
     r = find_similar_paragraphs(*arg_tuple)
-    return r, arg_tuple[1]
+    return r, arg_tuple[0]
 
 
 def main():
@@ -249,6 +247,7 @@ def main():
     argv = sys.argv[1:]
     raw_args = docopt(__doc__, argv=argv, version="dvg %s" % VERSION)
     a = CLArgs(_cast_str_values=True, **raw_args)
+    
 
     # 1. model
     models: List[Model] = []
@@ -266,8 +265,7 @@ def main():
 
     # 2. query
     query_lines = [a.query]
-    model.optimize_for_query_lines(query_lines)
-    query_vec = model.lines_to_vec(query_lines)
+    model.set_query(query_lines)
 
     count_document_files = 0
     chunk_size = 10000
@@ -280,7 +278,7 @@ def main():
         try:
             if a.workers and a.workers >= 2:
                 shms = model_shared(model)  # load the model into shared memory for process parallel
-                args_it = ((query_vec, dfs, model, a) for dfs in chunked_iter(expand_file_iter(a.file), chunk_size))
+                args_it = ((dfs, model, a) for dfs in chunked_iter(expand_file_iter(a.file), chunk_size))
                 with Pool(processes=a.workers) as pool:
                     for srs, dfs in pool.imap_unordered(find_similar_paragraphs_i, args_it):
                         search_results.extend(srs)
@@ -290,7 +288,7 @@ def main():
                             print_intermediate_search_result(search_results, count_document_files, time() - t0)
             else:
                 for dfs in chunked_iter(expand_file_iter(a.file), chunk_size):
-                    search_results.extend(find_similar_paragraphs(query_vec, dfs, model, a))
+                    search_results.extend(find_similar_paragraphs(dfs, model, a))
                     trim_search_results(search_results, a.top_n)
                     count_document_files += len(dfs)
                     if a.verbose:
@@ -321,7 +319,7 @@ def main():
             if sim < 0.0:
                 break
             para = lines[b:e]
-            excerpt = excerpt_text(para, model.lines_to_vec, query_vec, a.excerpt_length)
+            excerpt = excerpt_text(para, model.similarity_to_lines, a.excerpt_length)
             print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, sum(len(L) for L in para), df, b + 1, e, excerpt))
     finally:
         if shms is not None:

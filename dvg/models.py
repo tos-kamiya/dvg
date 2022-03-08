@@ -8,6 +8,7 @@ import sys
 import numpy as np
 import toml
 
+from .text_funcs import split_posi_nega_words
 from .scdv_embedding import Vec, SCDVEmbedding, read_scdv_embedding
 from .scdv_embedding import inner_product_n  # DO NOT remove this. re-exporting it
 
@@ -66,26 +67,32 @@ def load_tokenize_func(lang: Optional[str]) -> Callable[[str], Iterable[str]]:
 
 
 class Model:
-    def lines_to_vec(self, lines: List[str]) -> Vec:
-        raise NotImplementedError
-
     def find_oov_tokens(self, line: str) -> List[str]:
         raise NotImplementedError
 
-    def optimize_for_query_lines(self, query_lines: List[str]):
+    def set_query(self, lines: List[str]):
+        raise NotImplementedError
+    
+    def get_query_vec(self) -> Vec:
+        raise NotImplementedError
+        
+    def similarity_to_lines(self, lines: List[str]) -> float:
+        raise NotImplementedError
+
+    def _query_to_vec(self, lines: List[str]) -> Vec:
+        raise NotImplementedError
+
+    def _lines_to_vec(self, lines: List[str]) -> Vec:
+        raise NotImplementedError
+
+    def _optimize_for_query_lines(self, query_lines: List[str]):
         raise NotImplementedError
 
 
 class CombinedModel(Model):  # todo !! TEST !!
     def __init__(self, models: List[Model]):
         self.models = models
-        self.vec_widths = None
-
-    def lines_to_vec(self, lines: List[str]) -> Vec:
-        vecs = [model.lines_to_vec(lines) for model in self.models]
-        if self.vec_widths is None:
-            self.vec_widths = [vec.size for vec in vecs]
-        return np.concatenate(vecs)
+        self.query_vec = None
 
     def find_oov_tokens(self, line: str) -> List[str]:
         oov_set = set(self.models[0].find_oov_tokens(line))
@@ -93,9 +100,29 @@ class CombinedModel(Model):  # todo !! TEST !!
             oov_set.intersection_update(m.find_oov_tokens(line))
         return sorted(oov_set)
 
-    def optimize_for_query_lines(self, query_lines: List[str]):
+    def set_query(self, lines: List[str]):
         for m in self.models:
-            m.optimize_for_query_lines(query_lines)
+            m.set_query(lines)
+        self.query_vec = np.concatenate([m.get_query_vec() for m in self.models])
+        
+    def get_query_vec(self) -> Vec:
+        return np.concatenate([m.get_query_vec() for m in self.models])
+        
+    def similarity_to_lines(self, lines: List[str]) -> float:
+        vec = np.concatenate([m._lines_to_vec(lines) for m in self.models])
+        return inner_product_n(vec, self.query_vec)
+
+    def _query_to_vec(self, lines: List[str]) -> Vec:
+        vecs = [m._query_to_vec(lines) for m in self.models]
+        return np.concatenate(vecs)
+
+    def _lines_to_vec(self, lines: List[str]) -> Vec:
+        vecs = [m._lines_to_vec(lines) for m in self.models]
+        return np.concatenate(vecs)
+
+    def _optimize_for_query_lines(self, query_lines: List[str]):
+        for m in self.models:
+            m._optimize_for_query_lines(query_lines)
 
 
 class SCDVModel(Model):
@@ -108,13 +135,7 @@ class SCDVModel(Model):
             # build the model file and re-try to read
             build_model_file(model_file)
             self.embedder = read_scdv_embedding(model_file)
-
-    def lines_to_vec(self, lines: List[str]) -> Vec:
-        if self.tokenizer is None:
-            self.tokenizer = load_tokenize_func(self.tokenizer_name)
-        tokens = self.tokenizer("\n".join(lines))
-        vec = self.embedder.embed(tokens)  # unit vector
-        return vec
+        self.query_vec = None
 
     def find_oov_tokens(self, line: str) -> List[str]:
         if self.tokenizer is None:
@@ -123,8 +144,44 @@ class SCDVModel(Model):
         oov_tokens = [t for t in tokens if t not in self.embedder.word_to_index]
         return oov_tokens
 
-    def optimize_for_query_lines(self, query_lines: List[str]):
-        query_vec = self.lines_to_vec(query_lines)
+    def set_query(self, lines: List[str]):
+        self._optimize_for_query_lines(lines)
+        self.query_vec = self._query_to_vec(lines)
+    
+    def get_query_vec(self) -> Vec:
+        return self.query_vec
+
+    def similarity_to_lines(self, lines: List[str]) -> float:
+        assert self.query_vec is not None, "call set_query() before similarity_to_lines()"
+        dv = self._lines_to_vec(lines)
+        return inner_product_n(dv, self.query_vec)
+
+    def _query_to_vec(self, lines: List[str]) -> Vec:
+<<<<<<< HEAD
+        raw_word_it = itertools.chain(*[L.split(" ") for L in lines])
+        posi_raw_words, nega_raw_words = split_posi_nega_words(raw_word_it)
+        if self.tokenizer is None:
+            self.tokenizer = load_tokenize_func(self.tokenizer_name)
+        posi_words = self.tokenizer(" ".join(posi_raw_words))
+        nega_words = self.tokenizer(" ".join(nega_raw_words))
+        vec = self.embedder.embed(posi_words, negative_words=nega_words)  # unit vector
+=======
+        if self.tokenizer is None:
+            self.tokenizer = load_tokenize_func(self.tokenizer_name)
+        words = self.tokenizer("\n".join(lines))
+        vec = self.embedder.embed(words)  # unit vector
+>>>>>>> 9740792... refactor: refine api of model class
+        return vec
+
+    def _lines_to_vec(self, lines: List[str]) -> Vec:
+        if self.tokenizer is None:
+            self.tokenizer = load_tokenize_func(self.tokenizer_name)
+        words = self.tokenizer("\n".join(lines))
+        vec = self.embedder.embed(words)  # unit vector
+        return vec
+
+    def _optimize_for_query_lines(self, query_lines: List[str]):
+        query_vec = self._query_to_vec(query_lines)
         self.embedder.optimize_for_query_vec(query_vec)
 
 
