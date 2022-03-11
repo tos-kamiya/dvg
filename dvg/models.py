@@ -8,7 +8,6 @@ import sys
 import numpy as np
 import toml
 
-from .text_funcs import split_posi_nega_words
 from .scdv_embedding import Vec, SCDVEmbedding, read_scdv_embedding
 from .scdv_embedding import inner_product_n  # DO NOT remove this. re-exporting it
 
