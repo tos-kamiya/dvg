@@ -28,6 +28,10 @@ class NPWord:
     word: str
 
 
+class QueryVecError(ValueError):
+    pass
+
+
 class SCDVEmbedding:
     def __init__(self, words: List[str], clusters: np.ndarray, idf_wvs: np.ndarray):
         self.word_to_index = dict((w, i) for i, w in enumerate(words))
@@ -36,7 +40,6 @@ class SCDVEmbedding:
 
     def embed(self, words: Iterable[str]) -> Vec:
         wf = Counter(words)
-
         v = np.zeros(self.m_shape, dtype=np.float32)
         cluster_size = self.m_shape[0]
         for word, freq in wf.items():
@@ -61,6 +64,8 @@ class SCDVEmbedding:
         assert query_vec.size == self.m_shape[0] * self.m_shape[1]
 
         query_vec = sparse(query_vec)
+        if query_vec.size == 0:
+            raise QueryVecError("query vector does not contain any topics in the model")
 
         # remove words with zero-weight
         idx_words = sorted((i, w) for w, i in self.word_to_index.items())
@@ -93,7 +98,7 @@ class SCDVEmbedding:
         len_idf_wvs = self.m_shape[1]
         cluster_size = self.m_shape[0]
         for i in range(cluster_size):
-            if norm(query_vec[i * len_idf_wvs : (i + 1) * len_idf_wvs]) < 0.001 / cluster_size:
+            if norm(query_vec[i * len_idf_wvs : (i + 1) * len_idf_wvs]) < 0.001:
                 discarded_cluster_items.append(i)
 
         if len(discarded_cluster_items) == cluster_size:  # prevent all cluster items being discarded

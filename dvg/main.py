@@ -112,7 +112,7 @@ def expand_file_iter(target_files: Iterable[str]) -> Iterator[str]:
 
 
 Pos = Tuple[int, int]
-SPPD = Tuple[float, Pos, List[str], str]
+SPPD = Tuple[float, int, Pos, List[str], str]
 
 
 def prune_overlapped_paragraphs(sppds: List[SPPD]) -> List[SPPD]:
@@ -120,8 +120,8 @@ def prune_overlapped_paragraphs(sppds: List[SPPD]) -> List[SPPD]:
         return sppds
     dropped_index_set = set()
     for i, (spp1, spp2) in enumerate(zip(sppds, sppds[1:])):
-        ip1, sr1 = spp1[0], spp1[1]
-        ip2, sr2 = spp2[0], spp2[1]
+        ip1, sr1 = spp1[0], spp1[2]
+        ip2, sr2 = spp2[0], spp2[2]
         if ranges_overwrapping(sr1, sr2):
             if ip1 < ip2:
                 dropped_index_set.add(i)
@@ -167,15 +167,15 @@ def trim_search_results(search_results: List[SPPD], top_n: int):
 
 def print_intermediate_search_result(search_results: List[SPPD], done_files: int, elapsed_time: float):
     if search_results:
-        sim, pos, _para, df = search_results[0]
-        print("%s[%d done, %.2f docs/s] cur top-1: %.4f %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, sim, df, pos[0] + 1, pos[1]), end="", file=sys.stderr)
+        sim, para_len, pos, _para, df = search_results[0]
+        print("%s[%d done, %.2f docs/s] cur top-1: %.4f %d %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, sim, para_len, df, pos[0] + 1, pos[1]), end="", file=sys.stderr)
 
 
 def find_similar_paragraphs(doc_files: Iterable[str], model: Model, a: CLArgs) -> List[SPPD]:
     scanner = scanners.Scanner()
 
     search_results: List[SPPD] = []
-    sim_min_req = 0.0
+    sim_min_req = 0.5
     for df in doc_files:
         # read lines from document file
         lines = scanner.scan(df)
@@ -184,6 +184,7 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: Model, a: CLArgs) -
         sppds: List[SPPD] = []
         for pos in sliding_window_iter(len(lines), a.window):
             para = lines[pos[0]:pos[1]]
+            para_len = sum(len(L) for L in para)
             if a.include and not includes_all_texts(para, a.include) or a.exclude and includes_any_of_texts(para, a.exclude):
                 continue  # for pos, para
 
@@ -191,14 +192,12 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: Model, a: CLArgs) -
             if sim < sim_min_req:
                 continue  # for pos, para
 
-            if a.min_length > 0:  # penalty for short paragraphs
-                r = sum(len(L) for L in para) / a.min_length
-                if r < 1.0:
-                    sim *= r
-                    if sim < sim_min_req:
-                        continue  # for pos, para
+            if para_len < a.min_length:  # penalty for short paragraphs
+                sim = sim * para_len / a.min_length
+                if sim < sim_min_req:
+                    continue  # for pos, para
             
-            sppds.append((sim, pos, lines, df))
+            sppds.append((sim, para_len, pos, lines, df))
 
         if not sppds:
             continue  # for df
@@ -213,7 +212,7 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: Model, a: CLArgs) -
 
         # update search results
         search_results.extend(sppds)
-        if len(search_results) >= a.top_n * (2 if sim_min_req > 0.0 else 1):
+        if len(search_results) >= a.top_n * (2 if sim_min_req > 0.5 else 1):
             trim_search_results(search_results, a.top_n)
             sim_min_req = search_results[-1][0]
 
@@ -315,12 +314,12 @@ def main():
         trim_search_results(search_results, a.top_n)
         if a.header:
             print("\t".join(["sim", "chars", "location", "text"]))
-        for sim, (b, e), lines, df in search_results:
-            if sim < 0.0:
+        for sim, para_len, (b, e), lines, df in search_results:
+            if sim < 0.5:
                 break
             para = lines[b:e]
             excerpt = excerpt_text(para, model.similarity_to_lines, a.excerpt_length)
-            print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, sum(len(L) for L in para), df, b + 1, e, excerpt))
+            print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, para_len, df, b + 1, e, excerpt))
     finally:
         if shms is not None:
             model_shared_close(shms)
