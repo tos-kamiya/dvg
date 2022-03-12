@@ -9,7 +9,7 @@
 With SCDV models, search document files that contain similar parts to query.
 Supports searching within text files (.txt), PDF files (.pdf), and MS Word files (.docx).
 
-This example shows a text search from over 10 million answers on stackoverflow.com.
+This example shows a text search from over 10 million answers on stackoverflow.com. The execution time was about 18 minutes.
 
 ![](docs/images/run-animation.gif)
 

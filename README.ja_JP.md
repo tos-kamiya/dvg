@@ -6,7 +6,7 @@
 SCDVモデルを使って、クエリのフレーズに似た部分を含む文書ファイルを検索します。
 テキストファイル（.txt）、PDFファイル（.pdf）、MS Wordファイル（.docx）からの検索に対応しています。
 
-この例はstackoverflow.comの1千万件以上の回答からテキスト検索を行っています。
+この例はstackoverflow.comの1千万件以上の回答からテキスト検索を行っています。実行時間は18分程度でした。
 
 ![](docs/images/run-animation.gif)
 
@@ -79,7 +79,7 @@ Verboseオプションです。指定すると、検索の進行中に、その�
 
 | 状況 | 対策 |
 | --- | --- |
-| dvgを実行しようとすると **「ModuleNotFoundError: No module named 'fugashi'」** といったエラーメッセージが出る。 | pipコマンドで`dvg[ja]`のように`[ja]`をつけて再インストールしてください。 |
+| dvgを実行しようとすると **「ModuleNotFoundError: No module named 'fugashi'」** といったエラーメッセージが出る。 | pipコマンドで`pip3 install dvg-xxxxxxxx-py3-none-any.whl[ja]`のように`[ja]`をつけて再インストールしてください。 |
 | dvgを実行中に **「UnicodeEncodeError: 'cp932' codec can't encode character ...」** とっいたエラーメッセージが出る。 | ファイルの文字コードに関するエラーです。Windows上で実行している場合は「NKFのインストール」を行ってみてください。 |
 
 ## 謝辞
