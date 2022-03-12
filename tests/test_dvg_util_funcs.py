@@ -27,9 +27,9 @@ class DvgUtilFuncsTest(unittest.TestCase):
     def test_prune_overlapped_paragraphs(self):
         lines = ["a b", "c d", "e f", "b a"]
         spps = [
-            (0.1, (0, 2), lines),
-            (0.3, (1, 3), lines),
-            (0.2, (2, 4), lines),
+            (0.1, 4, (0, 2), lines),
+            (0.3, 4, (1, 3), lines),
+            (0.2, 4, (2, 4), lines),
         ]
 
         actual = prune_overlapped_paragraphs(spps)
@@ -37,9 +37,9 @@ class DvgUtilFuncsTest(unittest.TestCase):
         self.assertEqual(actual, expected)
 
         spps = [
-            (0.3, (0, 2), lines),
-            (0.2, (1, 3), lines),
-            (0.1, (2, 4), lines),
+            (0.3, 4, (0, 2), lines),
+            (0.2, 4, (1, 3), lines),
+            (0.1, 4, (2, 4), lines),
         ]
 
         actual = prune_overlapped_paragraphs(spps)
@@ -47,9 +47,9 @@ class DvgUtilFuncsTest(unittest.TestCase):
         self.assertEqual(actual, expected)
 
         spps = [
-            (0.3, (0, 2), lines),
-            (0.1, (1, 3), lines),
-            (0.2, (2, 4), lines),
+            (0.3, 4, (0, 2), lines),
+            (0.1, 4, (1, 3), lines),
+            (0.2, 4, (2, 4), lines),
         ]
 
         actual = prune_overlapped_paragraphs(spps)
