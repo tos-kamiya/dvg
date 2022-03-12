@@ -156,20 +156,10 @@ class SCDVModel(Model):
         return inner_product_n(dv, self.query_vec)
 
     def _query_to_vec(self, lines: List[str]) -> Vec:
-<<<<<<< HEAD
-        raw_word_it = itertools.chain(*[L.split(" ") for L in lines])
-        posi_raw_words, nega_raw_words = split_posi_nega_words(raw_word_it)
-        if self.tokenizer is None:
-            self.tokenizer = load_tokenize_func(self.tokenizer_name)
-        posi_words = self.tokenizer(" ".join(posi_raw_words))
-        nega_words = self.tokenizer(" ".join(nega_raw_words))
-        vec = self.embedder.embed(posi_words, negative_words=nega_words)  # unit vector
-=======
         if self.tokenizer is None:
             self.tokenizer = load_tokenize_func(self.tokenizer_name)
         words = self.tokenizer("\n".join(lines))
         vec = self.embedder.embed(words)  # unit vector
->>>>>>> 9740792... refactor: refine api of model class
         return vec
 
     def _lines_to_vec(self, lines: List[str]) -> Vec:
