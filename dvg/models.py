@@ -65,66 +65,7 @@ def load_tokenize_func(lang: Optional[str]) -> Callable[[str], Iterable[str]]:
         assert lang in ["en", "ja"]
 
 
-class Model:
-    def find_oov_tokens(self, line: str) -> List[str]:
-        raise NotImplementedError
-
-    def set_query(self, lines: List[str]):
-        raise NotImplementedError
-    
-    def get_query_vec(self) -> Vec:
-        raise NotImplementedError
-        
-    def similarity_to_lines(self, lines: List[str]) -> float:
-        raise NotImplementedError
-
-    def _query_to_vec(self, lines: List[str]) -> Vec:
-        raise NotImplementedError
-
-    def _lines_to_vec(self, lines: List[str]) -> Vec:
-        raise NotImplementedError
-
-    def _optimize_for_query_lines(self, query_lines: List[str]):
-        raise NotImplementedError
-
-
-class CombinedModel(Model):  # todo !! TEST !!
-    def __init__(self, models: List[Model]):
-        self.models = models
-        self.query_vec = None
-
-    def find_oov_tokens(self, line: str) -> List[str]:
-        oov_set = set(self.models[0].find_oov_tokens(line))
-        for m in self.models[1:]:
-            oov_set.intersection_update(m.find_oov_tokens(line))
-        return sorted(oov_set)
-
-    def set_query(self, lines: List[str]):
-        for m in self.models:
-            m.set_query(lines)
-        self.query_vec = np.concatenate([m.get_query_vec() for m in self.models])
-        
-    def get_query_vec(self) -> Vec:
-        return np.concatenate([m.get_query_vec() for m in self.models])
-        
-    def similarity_to_lines(self, lines: List[str]) -> float:
-        vec = np.concatenate([m._lines_to_vec(lines) for m in self.models])
-        return inner_product_n(vec, self.query_vec)
-
-    def _query_to_vec(self, lines: List[str]) -> Vec:
-        vecs = [m._query_to_vec(lines) for m in self.models]
-        return np.concatenate(vecs)
-
-    def _lines_to_vec(self, lines: List[str]) -> Vec:
-        vecs = [m._lines_to_vec(lines) for m in self.models]
-        return np.concatenate(vecs)
-
-    def _optimize_for_query_lines(self, query_lines: List[str]):
-        for m in self.models:
-            m._optimize_for_query_lines(query_lines)
-
-
-class SCDVModel(Model):
+class SCDVModel:
     def __init__(self, tokenizer_name: str, model_file: str):
         self.tokenizer_name = tokenizer_name
         self.tokenizer = None

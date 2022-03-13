@@ -14,7 +14,7 @@ from init_attrs_with_kwargs import InitAttrsWKwArgs
 import numpy as np
 
 from .iter_funcs import chunked_iter, ranges_overwrapping, sliding_window_iter
-from .models import Model, SCDVModel, CombinedModel, Vec, inner_product_n, find_model_specs
+from .models import SCDVModel, Vec, inner_product_n, find_model_specs
 from . import scanners
 from .text_funcs import includes_all_texts, includes_any_of_texts
 
@@ -22,22 +22,20 @@ from .text_funcs import includes_all_texts, includes_any_of_texts
 _script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
-def model_shared(model: Model):
+def model_shared(model: SCDVModel):
     shms = []
-    if isinstance(model, CombinedModel):
-        for m in model.models:
-            shms.extend(model_shared(m))
-    elif isinstance(model, SCDVModel):
-        model.tokenizer = None
 
-        emb = model.embedder
+    model.tokenizer = None
 
-        cvs = emb.cluster_idf_wvs
-        shmc = SharedMemory(create=True, size=cvs.nbytes)
-        shms.append(shmc)
-        cvs_shared = np.ndarray(cvs.shape, dtype=cvs.dtype, buffer=shmc.buf)
-        cvs_shared[:] = cvs[:]
-        emb.cluster_idf_wvs = cvs_shared
+    emb = model.embedder
+
+    cvs = emb.cluster_idf_wvs
+    shmc = SharedMemory(create=True, size=cvs.nbytes)
+    shms.append(shmc)
+    cvs_shared = np.ndarray(cvs.shape, dtype=cvs.dtype, buffer=shmc.buf)
+    cvs_shared[:] = cvs[:]
+    emb.cluster_idf_wvs = cvs_shared
+
     return shms
 
 
@@ -171,7 +169,7 @@ def print_intermediate_search_result(search_results: List[SPPD], done_files: int
         print("%s[%d done, %.2f docs/s] cur top-1: %.4f %d %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, sim, para_len, df, pos[0] + 1, pos[1]), end="", file=sys.stderr)
 
 
-def find_similar_paragraphs(doc_files: Iterable[str], model: Model, a: CLArgs) -> List[SPPD]:
+def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArgs) -> List[SPPD]:
     scanner = scanners.Scanner()
 
     search_results: List[SPPD] = []
@@ -249,18 +247,11 @@ def main():
     
 
     # 1. model
-    models: List[Model] = []
-    for m in a.model.split("+"):
-        s = find_model_specs(m)
-        if s is None:
-            sys.exit("Error: model not found: %s" % m)
-        tokenizer, model_file = s.tokenizer_name, s.model_file_path
-        model = SCDVModel(tokenizer, model_file)
-        models.append(model)
-    if len(models) >= 2:
-        model = CombinedModel(models)
-    else:
-        model = models[0]
+    s = find_model_specs(a.model)
+    if s is None:
+        sys.exit("Error: model not found: %s" % m)
+    tokenizer, model_file = s.tokenizer_name, s.model_file_path
+    model = SCDVModel(tokenizer, model_file)
 
     # 2. query
     query_lines = [a.query]
