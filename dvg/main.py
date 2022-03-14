@@ -69,6 +69,7 @@ class CLArgs(InitAttrsWKwArgs):
     workers: Optional[int]
     help: bool
     version: bool
+    over_pruning: float
 
 
 __doc__: str = """Document-vector Grep.
@@ -90,6 +91,7 @@ Options:
   --excerpt-length=CHARS, -t CHARS      Length of the text to be excerpted [default: {dec}].
   --header, -H                  Print the header line.
   --workers=WORKERS -j WORKERS  Worker process.
+  --over-pruning=RATIO, -P RATIO        No effect (only for compatibility to dvgi).
 """.format(
     dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dec=DEFAULT_EXCERPT_CHARS
 )

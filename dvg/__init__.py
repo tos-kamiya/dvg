@@ -10,3 +10,5 @@ from . import text_funcs
 from . import main
 
 from .main import main
+
+from . import dvgi
