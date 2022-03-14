@@ -276,10 +276,12 @@ def main():
 
     for f in a.file:
         try:
-            rp = os.path.relpath(f)
+            np = os.path.normpath(f)
+            rp = os.path.relpath(np)
         except ValueError:  # relpath() may raise a ValueError on Windows
+            np = f
             rp = None
-        if rp != f:
+        if rp != np:
             sys.exit("Error: file must be specified by relative path: %s" % f)
 
     chunk_size = 10000
