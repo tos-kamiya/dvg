@@ -162,18 +162,21 @@ def calc_df_clusters_i(a):
     return calc_df_clusters(*a)
 
 
-def df_para_iter(index_file_name: str, fnmatcher: FilenameMatcher, query_c_to_n: List[float], chunk_size: int, pruning_by_cluster: float) -> Iterator[List[Tuple[str, int, Tuple[int, int]]]]:
+def df_para_iter(index_file_name: str, fnmatcher: FilenameMatcher, query_c_to_n: List[float], chunk_size: int, pruning_by_cluster: float) -> Iterator[Tuple[List[Tuple[str, int, Tuple[int, int]]], int]]:
     with open(index_file_name, "r") as inp:
         df_mt_poss = []
+        df_count = 0
         df = file_mt = None
         for L in inp:
             fields = L.rstrip().split('\t')
             d, m, lrstr, cns = fields
 
             if d != df:
+                df_count += 1
                 if len(df_mt_poss) >= chunk_size:
-                    yield df_mt_poss
+                    yield df_mt_poss, df_count
                     df_mt_poss = []
+                    df_count = 0
                 df = d
                 file_mt = floor(os.path.getmtime(df)) if fnmatcher.match(d) else None
 
@@ -194,17 +197,15 @@ def df_para_iter(index_file_name: str, fnmatcher: FilenameMatcher, query_c_to_n:
             df_mt_poss.append((df, mt, (pos_b, pos_e)))
 
         if df_mt_poss:
-            yield df_mt_poss
+            yield df_mt_poss, df_count
 
 
-def calc_para_similarity(df_mt_pos_it: Iterable[Tuple[str, int, Tuple[int, int]]], model, scanner: Scanner, a: CLArgs) -> Tuple[List[SPPD], int]:
+def calc_para_similarity(df_mt_pos_it: Iterable[Tuple[str, int, Tuple[int, int]]], model, scanner: Scanner, a: CLArgs, dfc: int) -> Tuple[List[SPPD], int]:
     sim_min_req = 0.5
-    df_count = 0
     sppds: List[SPPD] = []
     prev_df_mt = None
     lines = None
     for df, df_mt, pos in df_mt_pos_it:
-        df_count += 1
         if (df, df_mt) != prev_df_mt:
             lines = scanner.scan(df)
             prev_df_mt = (df, df_mt)
@@ -226,7 +227,7 @@ def calc_para_similarity(df_mt_pos_it: Iterable[Tuple[str, int, Tuple[int, int]]
                 continue  # for df, df_mt, pos
 
         sppds.append((sim, para_len, pos, lines, df))
-    return sppds, df_count
+    return sppds, dfc
 
 
 def calc_para_similarity_i(a):
@@ -328,20 +329,20 @@ def main():
         try:
             search_results: List[SPPD] = []
 
-            count_document_files = 0
+            df_count = 0
             t0 = time.time()
-            args_it = ((df_paras, model, scanner, a) for df_paras in df_para_iter(index_file_name, fnmatcher, query_c_to_n, chunk_size, a.over_pruning))
+            args_it = ((df_mt_poss, model, scanner, a, dfc) for df_mt_poss, dfc in df_para_iter(index_file_name, fnmatcher, query_c_to_n, chunk_size, a.over_pruning))
             with Pool(processes=a.workers) as pool:
                 for sppds, dfc in pool.imap_unordered(calc_para_similarity_i, args_it):
-                    count_document_files += dfc
+                    df_count += dfc
                     update_search_results(search_results, sppds, a.top_n, a.paragraph_search)
                     if a.verbose:
-                        print_intermediate_search_result(search_results, count_document_files, time.time() - t0)
+                        print_intermediate_search_result(search_results, df_count, time.time() - t0)
 
             if a.verbose:
                 print(
                     _ANSI_ESCAPE_CLEAR_CUR_LINE +
-                    "> number of document files (after pruning): %d" % count_document_files, 
+                    "> number of document files: %d" % df_count, 
                     file=sys.stderr)
 
             # output search results
