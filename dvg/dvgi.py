@@ -146,7 +146,10 @@ def df_mt_iter(index_file_name: str) -> Iterator[Tuple[str, int]]:
 def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: CLArgs) -> List[Tuple[str, int, Tuple[int, int], List[Tuple[int, float]]]]:
     r = []
     for df in dfs:
-        df_mtime = floor(os.path.getmtime(df))
+        try:
+            df_mtime = floor(os.path.getmtime(df))
+        except FileNotFoundError:
+            assert False, "Removed while running dvgi?: %s" % df
         lines = scanner.scan(df)
         for pos in sliding_window_iter(len(lines), a.window):
             pos_b, pos_e = pos
@@ -178,7 +181,13 @@ def df_para_iter(index_file_name: str, fnmatcher: FilenameMatcher, query_c_to_n:
                     df_mt_poss = []
                     df_count = 0
                 df = d
-                file_mt = floor(os.path.getmtime(df)) if fnmatcher.match(d) else None
+                if fnmatcher.match(d):
+                    try:
+                        file_mt = floor(os.path.getmtime(df))
+                    except FileNotFoundError:
+                        assert False, "Removed while running dvgi?: %s" % df
+                else:
+                    file_mt = None
 
             mt = int(m)
             if file_mt is None or abs(mt - file_mt) >= 3:
@@ -301,7 +310,10 @@ def main():
         if a.header:
             print("file\tmtime\tindex")
         for df in expand_file_iter(a.file):
-            df_mtime = floor(os.path.getmtime(df))
+            try:
+                df_mtime = floor(os.path.getmtime(df))
+            except FileNotFoundError:
+                assert False, "Removed while running dvgi?: %s" % df
             d = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(df_mtime))
             df_mtime_in_indices = df_tbl.get(df, [])
             if not df_mtime_in_indices:
@@ -327,23 +339,32 @@ def main():
 
         shms = model_shared(model)  # load the model into shared memory for process parallel
         try:
+            # search for document files that are similar to the query
+            a.verbose and print("", end="", file=sys.stderr)
             search_results: List[SPPD] = []
-
-            df_count = 0
-            t0 = time.time()
-            args_it = ((df_mt_poss, model, scanner, a, dfc) for df_mt_poss, dfc in df_para_iter(index_file_name, fnmatcher, query_c_to_n, chunk_size, a.over_pruning))
-            with Pool(processes=a.workers) as pool:
-                for sppds, dfc in pool.imap_unordered(calc_para_similarity_i, args_it):
-                    df_count += dfc
-                    update_search_results(search_results, sppds, a.top_n, a.paragraph_search)
-                    if a.verbose:
-                        print_intermediate_search_result(search_results, df_count, time.time() - t0)
-
-            if a.verbose:
-                print(
-                    _ANSI_ESCAPE_CLEAR_CUR_LINE +
-                    "> number of document files: %d" % df_count, 
-                    file=sys.stderr)
+            count_document_files = 0
+            try:
+                t0 = time.time()
+                args_it = ((df_mt_poss, model, scanner, a, dfc) for df_mt_poss, dfc in df_para_iter(index_file_name, fnmatcher, query_c_to_n, chunk_size, a.over_pruning))
+                with Pool(processes=a.workers) as pool:
+                    for sppds, dfc in pool.imap_unordered(calc_para_similarity_i, args_it):
+                        count_document_files += dfc
+                        update_search_results(search_results, sppds, a.top_n, a.paragraph_search)
+                        if a.verbose:
+                            print_intermediate_search_result(search_results, count_document_files, time.time() - t0)
+            except KeyboardInterrupt:
+                if a.verbose:
+                    print(
+                        _ANSI_ESCAPE_CLEAR_CUR_LINE +
+                        "> Interrupted. Shows the search results up to now.\n" +
+                        "> number of document files: %d" % count_document_files, 
+                        file=sys.stderr)
+            else:
+                if a.verbose:
+                    print(
+                        _ANSI_ESCAPE_CLEAR_CUR_LINE +
+                        "> number of document files: %d" % count_document_files, 
+                        file=sys.stderr)
 
             # output search results
             trim_search_results(search_results, a.top_n)
