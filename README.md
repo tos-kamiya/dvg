@@ -79,9 +79,12 @@ Example of searching from dictionary data [Webster's Unabridged English Dictiona
 
 ## Indexing (experimental)
 
+**This feature is experimental and the search results may be worse than the normal search (especially for document files with small similarity values).**
+
 If you are repeatedly searching for the same document file, consider indexing the document files.
 
-After you have created an index DB, you can use that index DB to prune out document files (that are obviously not relevant to your query), thus the search performance becomes about twice or more.
+After creating an index DB, the performance of the search is boosted by pruning (filtering) the document files that are obviously not relevant to the query.
+(The performance improvement comes from two things: fewer floating-point calculations to compute similarity, and fewer file IOs to read the document files).
 
 (1) To perform indexing, make the directory where the document files are located the current directory and execute the command `dvgi --build` in that directory.
 
