@@ -2,7 +2,7 @@
 
 The following steps have been checked on Ubuntu 20.04.
 
-`dvg` is compatible with Python versions `3.8` to `3.10`.
+`dvg` is compatible with Python versions from `3.8` to `3.10`.
 
 (1) Install `dvg`.
 
