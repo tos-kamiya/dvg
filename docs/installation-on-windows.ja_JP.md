@@ -1,16 +1,14 @@
 ## Windowsでのインストール
 
-Pythonのバージョン`3.8`と`3.9`に対応しています(PyTorchが必要であるためPython `3.10`ではインストールできません）。
+Pythonのバージョン`3.8`から`3.10`までに対応しています。
 
 ![](images/win-pdftotext.png)
 
 (1) `dvg`をインストール
 
-githubのリリースページからファイル`dvg-xxxxxxxx-py3-none-any.whl`をダウンロードして、pipでインストールしてください。
-
 ```sh
 pip install wheel
-pip install dvg-xxxxxxxx-py3-none-any.whl[ja]
+pip install dvg[ja]
 ```
 
 (2) NKFをインストール **(推奨)**
