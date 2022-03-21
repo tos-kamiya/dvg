@@ -88,10 +88,13 @@ Example of searching from dictionary data [Webster's Unabridged English Dictiona
 Thanks to Wikipedia for releasing a huge corpus of languages:  
 https://dumps.wikimedia.org/
 
-For more information on SCDV(Sparse Composite Document Vectors), refer the paper by D. Mekala et al.:  
-https://arxiv.org/abs/1612.06778
-
 ## License
 
 dvg is distributed under [BSD-2](https://opensource.org/licenses/BSD-2-Clause) license.
+
+## Links
+
+* (PyPI page of) `dvg` https://pypi.org/project/dvg/
+
+* D. Mekala et al., "SCDV: Sparse Composite Document Vectors using soft clustering over distributional representations," https://arxiv.org/abs/1612.06778
 
