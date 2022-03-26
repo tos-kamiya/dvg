@@ -104,7 +104,7 @@ else:
     _system_temp_dir = tempfile.gettempdir()
 
     def pdf_scan(file_name: str) -> str:
-        tempf = os.path.join(_system_temp_dir, "%d.txt" % str(uuid.uuid4()))
+        tempf = os.path.join(_system_temp_dir, "%s.txt" % str(uuid.uuid4()))
         try:
             cmd = ["pdftotext.exe", file_name, tempf]
             p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -112,7 +112,7 @@ else:
             raise ScanError('Error: pdftotext is not installed.')
         else:
             if p.returncode != 0:
-                raise ScanError("ScanError: %s, file: %s" % (p.stderr.decode("utf-8").rstrip(), repr(file_name)))
+                raise ScanError("ScanError: %s, file: %s, (%s)" % (p.stderr.decode("utf-8").rstrip(), repr(file_name), p.stdout))
             with open_file(tempf) as f:
                 text = f.read()
             return text
