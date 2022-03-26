@@ -2,6 +2,7 @@ from typing import Callable, Iterable, Iterator, List, Optional, Tuple
 
 from glob import iglob
 import importlib
+import io
 from multiprocessing import Pool
 from multiprocessing.shared_memory import SharedMemory
 import os
@@ -227,6 +228,9 @@ def find_similar_paragraphs_i(arg_tuple):
 
 
 def main():
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding=sys.stdout.encoding, errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding=sys.stderr.encoding, errors="replace")
+
     argv = sys.argv[1:]
     for i, a in enumerate(argv):
         if a == "--bin-dir":

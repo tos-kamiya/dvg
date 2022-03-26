@@ -2,6 +2,7 @@ from typing import Dict, Iterable, Iterator, List, Optional, FrozenSet, Tuple
 
 from fnmatch import fnmatch
 import importlib
+import io
 from itertools import groupby
 from math import floor
 from multiprocessing import Pool
@@ -261,6 +262,9 @@ def update_search_results(search_results: List[SPPD], sppds: List[SPPD], top_n: 
 
 
 def main():
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding=sys.stdout.encoding, errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding=sys.stderr.encoding, errors="replace")
+
     argv = sys.argv[1:]
     raw_args = docopt(__doc__, argv=argv, version="dvg %s" % VERSION)
     a = CLArgs(_cast_str_values=True, **raw_args)
