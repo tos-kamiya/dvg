@@ -16,7 +16,7 @@ import numpy as np
 
 from .iter_funcs import chunked_iter, ranges_overwrapping, sliding_window_iter
 from .models import SCDVModel, Vec, inner_product_n, find_model_specs
-from . import scanners
+from .scanners import Scanner, ScanError
 from .text_funcs import includes_all_texts, includes_any_of_texts
 
 
@@ -173,13 +173,17 @@ def print_intermediate_search_result(search_results: List[SPPD], done_files: int
 
 
 def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArgs) -> List[SPPD]:
-    scanner = scanners.Scanner()
+    scanner = Scanner()
 
     search_results: List[SPPD] = []
     sim_min_req = 0.5
     for df in doc_files:
         # read lines from document file
-        lines = scanner.scan(df)
+        try:
+            lines = scanner.scan(df)
+        except ScanError as e:
+            print("> Warning: %s" % e, file=sys.stderr)
+            continue
 
         # for each paragraph in the file, calculate the similarity to the query
         sppds: List[SPPD] = []

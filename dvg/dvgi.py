@@ -21,7 +21,7 @@ from .main import model_shared, model_shared_close
 from .iter_funcs import sliding_window_iter
 from .models import SCDVModel, Vec, find_model_specs
 from .scdv_embedding import sparse
-from .scanners import Scanner
+from .scanners import Scanner, ScanError
 from .text_funcs import includes_all_texts, includes_any_of_texts
 
 
@@ -151,7 +151,12 @@ def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: 
             df_mtime = floor(os.path.getmtime(df))
         except FileNotFoundError:
             assert False, "Removed while running dvgi?: %s" % df
-        lines = scanner.scan(df)
+        # read lines from document file
+        try:
+            lines = scanner.scan(df)
+        except ScanError as e:
+            print("> Warning: %s" % e, file=sys.stderr)
+            continue  # for df
         for pos in sliding_window_iter(len(lines), a.window):
             pos_b, pos_e = pos
             para = lines[pos_b:pos_e]
@@ -217,7 +222,11 @@ def calc_para_similarity(df_mt_pos_it: Iterable[Tuple[str, int, Tuple[int, int]]
     lines = None
     for df, df_mt, pos in df_mt_pos_it:
         if (df, df_mt) != prev_df_mt:
-            lines = scanner.scan(df)
+            try:
+                lines = scanner.scan(df)
+            except ScanError as e:
+                print("> Warning: %s" % e, file=sys.stderr)
+                continue  # for df
             prev_df_mt = (df, df_mt)
         assert lines is not None
         para = lines[pos[0]:pos[1]]
