@@ -2,7 +2,6 @@ from typing import *
 
 import random
 import unittest
-import itertools
 
 from dvg.iter_funcs import *
 
@@ -97,6 +96,7 @@ class IterFuncsTest(unittest.TestCase):
                 poss,
                 [(0, 6)],
             )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -14,19 +14,20 @@ from docopt import docopt
 from init_attrs_with_kwargs import InitAttrsWKwArgs
 from numpy.linalg import norm
 
-from .main import _ANSI_ESCAPE_CLEAR_CUR_LINE
-from .main import DEFAULT_TOP_N, DEFAULT_WINDOW_SIZE, DEFAULT_EXCERPT_CHARS, DEFAULT_PREFER_LONGER_THAN
-from .main import SPPD, chunked_iter, excerpt_text, expand_file_iter, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
-from .main import model_shared, model_shared_close
-from .iter_funcs import sliding_window_iter
+from .iter_funcs import chunked_iter, sliding_window_iter
 from .models import SCDVModel, find_model_specs
-from .scdv_embedding import sparse
 from .scanners import Scanner, ScanError
+from .scdv_embedding import sparse
+from .search_result import ANSI_ESCAPE_CLEAR_CUR_LINE, SLPPD, excerpt_text, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
 from .text_funcs import includes_all_texts, includes_any_of_texts
+
+from .dvg import expand_file_iter, model_shared, model_shared_close
+from .dvg import DEFAULT_TOP_N, DEFAULT_WINDOW_SIZE, DEFAULT_EXCERPT_CHARS, DEFAULT_PREFER_LONGER_THAN
 
 
 VERSION = importlib.metadata.version("dvg")
 DEFAULT_OVER_PRUNING = 0.5
+
 
 class CLArgs(InitAttrsWKwArgs):
     build: bool
@@ -76,7 +77,11 @@ Options:
   --workers=WORKERS -j WORKERS  Worker process [default: 1].
   --over-pruning=RATIO, -P RATIO        Excessive early pruning. Large values will result in **inaccurate** search results [default: {dop}].
 """.format(
-    dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dec=DEFAULT_EXCERPT_CHARS, dop=DEFAULT_OVER_PRUNING,
+    dtn=DEFAULT_TOP_N,
+    dws=DEFAULT_WINDOW_SIZE,
+    dplt=DEFAULT_PREFER_LONGER_THAN,
+    dec=DEFAULT_EXCERPT_CHARS,
+    dop=DEFAULT_OVER_PRUNING,
 )
 
 
@@ -85,17 +90,17 @@ class FilenameMatcher:
         self.matchers = []
         names = []
         for p in patterns:
-            if '*' in p:
+            if "*" in p:
                 self.matchers.append(p)
             else:
                 names.append(p)
         self.name_set = frozenset(names)
-    
+
     def match(self, filename: str) -> bool:
         for m in self.matchers:
             if fnmatch(filename, m):
                 return True
-        return filename in self.name_set        
+        return filename in self.name_set
 
 
 def calc_clusters(lines: List[str], model: SCDVModel) -> List[Tuple[int, float]]:
@@ -132,7 +137,7 @@ def df_mt_iter(index_file_name: str) -> Iterator[Tuple[str, int]]:
     with open(index_file_name, "r") as inp:
         last_df_mt = None
         for L in inp:
-            fields = L.rstrip().split('\t')
+            fields = L.rstrip().split("\t")
             df, mt, lrstr, clusters = fields
             mt = int(mt)
             df_mt = (df, mt)
@@ -174,7 +179,7 @@ def df_para_iter(index_file_name: str, fnmatcher: FilenameMatcher, query_c_to_n:
         df_count = 0
         df = file_mt = None
         for L in inp:
-            fields = L.rstrip().split('\t')
+            fields = L.rstrip().split("\t")
             d, m, lrstr, cns = fields
 
             if d != df:
@@ -203,7 +208,7 @@ def df_para_iter(index_file_name: str, fnmatcher: FilenameMatcher, query_c_to_n:
                     break  # for c
             else:
                 continue  # for L
-            
+
             b, e = lrstr.split("-")
             pos_b, pos_e = int(b), int(e)
             df_mt_poss.append((df, mt, (pos_b, pos_e)))
@@ -212,9 +217,9 @@ def df_para_iter(index_file_name: str, fnmatcher: FilenameMatcher, query_c_to_n:
             yield df_mt_poss, df_count
 
 
-def calc_para_similarity(df_mt_pos_it: Iterable[Tuple[str, int, Tuple[int, int]]], model, scanner: Scanner, a: CLArgs, dfc: int) -> Tuple[List[SPPD], int]:
+def calc_para_similarity(df_mt_pos_it: Iterable[Tuple[str, int, Tuple[int, int]]], model, scanner: Scanner, a: CLArgs, dfc: int) -> Tuple[List[SLPPD], int]:
     sim_min_req = 0.5
-    sppds: List[SPPD] = []
+    slppds: List[SLPPD] = []
     prev_df_mt = None
     lines = None
     for df, df_mt, pos in df_mt_pos_it:
@@ -226,7 +231,7 @@ def calc_para_similarity(df_mt_pos_it: Iterable[Tuple[str, int, Tuple[int, int]]
                 continue  # for df
             prev_df_mt = (df, df_mt)
         assert lines is not None
-        para = lines[pos[0]:pos[1]]
+        para = lines[pos[0] : pos[1]]
         para_len = sum(len(L) for L in para)
 
         if a.include and not includes_all_texts(para, a.include) or a.exclude and includes_any_of_texts(para, a.exclude):
@@ -242,22 +247,22 @@ def calc_para_similarity(df_mt_pos_it: Iterable[Tuple[str, int, Tuple[int, int]]
             if sim < sim_min_req:
                 continue  # for df, df_mt, pos
 
-        sppds.append((sim, para_len, pos, lines, df))
-    return sppds, dfc
+        slppds.append((sim, para_len, pos, lines, df))
+    return slppds, dfc
 
 
 def calc_para_similarity_i(a):
     return calc_para_similarity(*a)
 
 
-def update_search_results(search_results: List[SPPD], sppds: List[SPPD], top_n: int, paragraph_search: bool):
+def update_search_results(search_results: List[SLPPD], sppds: List[SLPPD], top_n: int, paragraph_search: bool):
     for df, g in groupby(sppds, key=lambda sppd: sppd[4]):
         # pick up paragraphs for the file
         sppds = list(g)
         if paragraph_search:
             sppds = prune_overlapped_paragraphs(sppds)  # remove paragraphs that overlap
             sppds.sort(reverse=True)
-            del sppds[top_n :]
+            del sppds[top_n:]
             search_results.extend(sppds)
         else:
             if sppds:
@@ -279,7 +284,7 @@ def main():
     if s is None:
         sys.exit("Error: model not found: %s" % a.model)
     tokenizer, model_file = s.tokenizer_name, s.model_file_path
-    index_file_name = os.path.join('.dvg', "%s.w%d.clu" % (os.path.basename(model_file), a.window))
+    index_file_name = os.path.join(".dvg", "%s.w%d.clu" % (os.path.basename(model_file), a.window))
 
     model = SCDVModel(tokenizer, model_file)
     scanner = Scanner()
@@ -352,8 +357,9 @@ def main():
         shms = model_shared(model)  # load the model into shared memory for process parallel
         try:
             # search for document files that are similar to the query
-            a.verbose and print("", end="", file=sys.stderr)
-            search_results: List[SPPD] = []
+            if a.verbose:
+                print("", end="", file=sys.stderr)
+            search_results: List[SLPPD] = []
             count_document_files = 0
             try:
                 t0 = time.time()
@@ -366,17 +372,10 @@ def main():
                             print_intermediate_search_result(search_results, count_document_files, time.time() - t0)
             except KeyboardInterrupt:
                 if a.verbose:
-                    print(
-                        _ANSI_ESCAPE_CLEAR_CUR_LINE +
-                        "> Interrupted. Shows the search results up to now.\n" +
-                        "> number of document files: %d" % count_document_files, 
-                        file=sys.stderr)
+                    print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> Interrupted. Shows the search results up to now.\n" + "> number of document files: %d" % count_document_files, file=sys.stderr)
             else:
                 if a.verbose:
-                    print(
-                        _ANSI_ESCAPE_CLEAR_CUR_LINE +
-                        "> number of document files: %d" % count_document_files, 
-                        file=sys.stderr)
+                    print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> number of document files: %d" % count_document_files, file=sys.stderr)
 
             # output search results
             trim_search_results(search_results, a.top_n)

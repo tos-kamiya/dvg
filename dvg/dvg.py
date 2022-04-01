@@ -1,4 +1,4 @@
-from typing import Callable, Iterable, Iterator, List, Optional, Tuple
+from typing import Iterable, Iterator, List, Optional
 
 from glob import iglob
 import importlib
@@ -14,9 +14,10 @@ from docopt import docopt
 from init_attrs_with_kwargs import InitAttrsWKwArgs
 import numpy as np
 
-from .iter_funcs import chunked_iter, ranges_overwrapping, sliding_window_iter
+from .iter_funcs import chunked_iter, sliding_window_iter
 from .models import SCDVModel, find_model_specs
 from .scanners import Scanner, ScanError
+from .search_result import ANSI_ESCAPE_CLEAR_CUR_LINE, SLPPD, excerpt_text, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
 from .text_funcs import includes_all_texts, includes_any_of_texts
 
 
@@ -51,7 +52,6 @@ DEFAULT_TOP_N = 20
 DEFAULT_WINDOW_SIZE = 20
 DEFAULT_EXCERPT_CHARS = 80
 DEFAULT_PREFER_LONGER_THAN = 80
-_ANSI_ESCAPE_CLEAR_CUR_LINE = "\x1b[1K\n\x1b[1A"
 
 
 class CLArgs(InitAttrsWKwArgs):
@@ -112,70 +112,10 @@ def expand_file_iter(target_files: Iterable[str]) -> Iterator[str]:
             yield f
 
 
-Pos = Tuple[int, int]
-SPPD = Tuple[float, int, Pos, List[str], str]
-
-
-def prune_overlapped_paragraphs(sppds: List[SPPD]) -> List[SPPD]:
-    if not sppds:
-        return sppds
-    dropped_index_set = set()
-    for i, (spp1, spp2) in enumerate(zip(sppds, sppds[1:])):
-        ip1, sr1 = spp1[0], spp1[2]
-        ip2, sr2 = spp2[0], spp2[2]
-        if ranges_overwrapping(sr1, sr2):
-            if ip1 < ip2:
-                dropped_index_set.add(i)
-            else:
-                dropped_index_set.add(i + 1)
-    return [ipsrls for i, ipsrls in enumerate(sppds) if i not in dropped_index_set]
-
-
-def excerpt_text(lines: List[str], similarity_to_lines: Callable[[List[str]], float], length_to_excerpt: int) -> str:
-    if not lines:
-        return ""
-
-    if len(lines) == 1:
-        return lines[0][:length_to_excerpt]
-
-    len_lines = len(lines)
-    max_sim_data = None
-    for p in range(len_lines):
-        para_textlen = len(lines[p])
-        if para_textlen == 0:
-            continue  # for p
-        q = p + 1
-        while q < len_lines and para_textlen < length_to_excerpt:
-            para_textlen += len(lines[q])
-            q += 1
-        sim = similarity_to_lines(lines[p:q])
-        if max_sim_data is None or sim > max_sim_data[0]:
-            max_sim_data = sim, (p, q)
-        if q == len_lines:
-            break  # for p
-    assert max_sim_data is not None
-
-    b, e = max_sim_data[1]
-    excerpt = "|".join(lines[b:e])
-    excerpt = excerpt[:length_to_excerpt]
-    return excerpt
-
-
-def trim_search_results(search_results: List[SPPD], top_n: int):
-    search_results.sort(reverse=True)
-    del search_results[top_n:]
-
-
-def print_intermediate_search_result(search_results: List[SPPD], done_files: int, elapsed_time: float):
-    if search_results:
-        sim, para_len, pos, _para, df = search_results[0]
-        print("%s[%d done, %.2f docs/s] cur top-1: %.4f %d %s:%d-%d" % (_ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, done_files / elapsed_time, sim, para_len, df, pos[0] + 1, pos[1]), end="", file=sys.stderr)
-
-
-def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArgs) -> List[SPPD]:
+def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArgs) -> List[SLPPD]:
     scanner = Scanner()
 
-    search_results: List[SPPD] = []
+    search_results: List[SLPPD] = []
     sim_min_req = 0.5
     for df in doc_files:
         # read lines from document file
@@ -186,9 +126,9 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArg
             continue
 
         # for each paragraph in the file, calculate the similarity to the query
-        sppds: List[SPPD] = []
+        slppds: List[SLPPD] = []
         for pos in sliding_window_iter(len(lines), a.window):
-            para = lines[pos[0]:pos[1]]
+            para = lines[pos[0] : pos[1]]
             para_len = sum(len(L) for L in para)
             if a.include and not includes_all_texts(para, a.include) or a.exclude and includes_any_of_texts(para, a.exclude):
                 continue  # for pos, para
@@ -201,22 +141,22 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArg
                 sim = sim * para_len / a.min_length
                 if sim < sim_min_req:
                     continue  # for pos, para
-            
-            sppds.append((sim, para_len, pos, lines, df))
 
-        if not sppds:
+            slppds.append((sim, para_len, pos, lines, df))
+
+        if not slppds:
             continue  # for df
 
         # pick up paragraphs for the file
         if a.paragraph_search:
-            sppds = prune_overlapped_paragraphs(sppds)  # remove paragraphs that overlap
-            sppds.sort(reverse=True)
-            del sppds[a.top_n :]
+            slppds = prune_overlapped_paragraphs(slppds)  # remove paragraphs that overlap
+            slppds.sort(reverse=True)
+            del slppds[a.top_n :]
         else:
-            sppds = [max(sppds)]  # extract only the most similar paragraphs in the file
+            slppds = [max(slppds)]  # extract only the most similar paragraphs in the file
 
         # update search results
-        search_results.extend(sppds)
+        search_results.extend(slppds)
         if len(search_results) >= a.top_n * (2 if sim_min_req > 0.5 else 1):
             trim_search_results(search_results, a.top_n)
             sim_min_req = search_results[-1][0]
@@ -254,12 +194,11 @@ def main():
     argv = sys.argv[1:]
     raw_args = docopt(__doc__, argv=argv, version="dvg %s" % VERSION)
     a = CLArgs(_cast_str_values=True, **raw_args)
-    
 
     # 1. model
     s = find_model_specs(a.model)
     if s is None:
-        sys.exit("Error: model not found: %s" % m)
+        sys.exit("Error: model not found: %s" % a.model)
     tokenizer, model_file = s.tokenizer_name, s.model_file_path
     model = SCDVModel(tokenizer, model_file)
 
@@ -272,8 +211,9 @@ def main():
     shms = None
     try:
         # search for document files that are similar to the query
-        a.verbose and print("", end="", file=sys.stderr)
-        search_results: List[SPPD] = []
+        if a.verbose:
+            print("", end="", file=sys.stderr)
+        search_results: List[SLPPD] = []
         t0 = time()
         try:
             if a.workers and a.workers >= 2:
@@ -294,22 +234,15 @@ def main():
                     if a.verbose:
                         print_intermediate_search_result(search_results, count_document_files, time() - t0)
         except FileNotFoundError as e:
-            a.verbose and print(_ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr)
+            if a.verbose:
+                print(ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr)
             sys.exit(str(e))
         except KeyboardInterrupt:
             if a.verbose:
-                print(
-                    _ANSI_ESCAPE_CLEAR_CUR_LINE +
-                    "> Interrupted. Shows the search results up to now.\n" +
-                    "> number of document files: %d" % count_document_files, 
-                    file=sys.stderr)
-
+                print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> Interrupted. Shows the search results up to now.\n" + "> number of document files: %d" % count_document_files, file=sys.stderr)
         else:
             if a.verbose:
-                print(
-                    _ANSI_ESCAPE_CLEAR_CUR_LINE +
-                    "> number of document files: %d" % count_document_files, 
-                    file=sys.stderr)
+                print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> number of document files: %d" % count_document_files, file=sys.stderr)
 
         # output search results
         trim_search_results(search_results, a.top_n)

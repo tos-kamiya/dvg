@@ -86,7 +86,7 @@ class SCDVModel:
     def set_query(self, lines: List[str]):
         self._optimize_for_query_lines(lines)
         self.query_vec = self._query_to_vec(lines)
-    
+
     def get_query_vec(self) -> Vec:
         return self.query_vec
 
