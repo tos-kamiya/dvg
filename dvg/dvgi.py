@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, Iterator, List, Optional, FrozenSet, Tuple
+from typing import Iterable, Iterator, List, Optional, Tuple
 
 from fnmatch import fnmatch
 import importlib
@@ -19,13 +19,10 @@ from .main import DEFAULT_TOP_N, DEFAULT_WINDOW_SIZE, DEFAULT_EXCERPT_CHARS, DEF
 from .main import SPPD, chunked_iter, excerpt_text, expand_file_iter, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
 from .main import model_shared, model_shared_close
 from .iter_funcs import sliding_window_iter
-from .models import SCDVModel, Vec, find_model_specs
+from .models import SCDVModel, find_model_specs
 from .scdv_embedding import sparse
 from .scanners import Scanner, ScanError
 from .text_funcs import includes_all_texts, includes_any_of_texts
-
-
-_script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 VERSION = importlib.metadata.version("dvg")

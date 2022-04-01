@@ -1,5 +1,4 @@
-from operator import neg
-from typing import Iterable, List, NewType, Optional
+from typing import Iterable, List, NewType
 
 from collections import Counter
 import pickle
@@ -21,11 +20,6 @@ def sparse(v: Vec) -> Vec:
     threshold = (abs(np.max(v)) + abs(np.min(v))) * 0.5 * 0.02
     v[abs(v) < threshold] = 0.0
     return v
-
-
-class NPWord:
-    nega_posi: int  # +1 or -1
-    word: str
 
 
 class QueryVecError(ValueError):

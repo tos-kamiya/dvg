@@ -15,7 +15,7 @@ from init_attrs_with_kwargs import InitAttrsWKwArgs
 import numpy as np
 
 from .iter_funcs import chunked_iter, ranges_overwrapping, sliding_window_iter
-from .models import SCDVModel, Vec, inner_product_n, find_model_specs
+from .models import SCDVModel, find_model_specs
 from .scanners import Scanner, ScanError
 from .text_funcs import includes_all_texts, includes_any_of_texts
 
