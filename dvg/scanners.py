@@ -83,8 +83,8 @@ if platform.system() != "Windows":
     def pdf_scan(file_name: str) -> str:
         try:
             import pdftotext
-        except ImportError as e:
-            raise ScanError('Error: pdftotext is not installed.')
+        except ImportError:
+            raise ScanError("Error: pdftotext is not installed.")
 
         try:
             with open(file_name, "rb") as f:
@@ -108,8 +108,8 @@ else:
         try:
             cmd = ["pdftotext.exe", file_name, tempf]
             p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        except FileNotFoundError as e:
-            raise ScanError('Error: pdftotext is not installed.')
+        except FileNotFoundError:
+            raise ScanError("Error: pdftotext is not installed.")
         else:
             if p.returncode != 0:
                 raise ScanError("ScanError: %s, file: %s, (%s)" % (p.stderr.decode("utf-8").rstrip(), repr(file_name), p.stdout))

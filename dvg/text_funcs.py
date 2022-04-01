@@ -1,4 +1,4 @@
-from typing import Iterable, List, Tuple
+from typing import List
 
 
 def includes_all_texts(lines: List[str], texts: List[str]) -> bool:

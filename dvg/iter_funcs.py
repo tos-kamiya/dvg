@@ -4,14 +4,14 @@ from typing import Iterable, Iterator, List, Tuple, TypeVar
 T = TypeVar("T")
 
 
-def remove_non_first_appearances(lst: Iterable[T]) -> List[T]:
-    s = set()
-    r = []
-    for i in lst:
-        if i not in s:
-            r.append(i)
-            s.add(i)
-    return r
+# def remove_non_first_appearances(lst: Iterable[T]) -> List[T]:
+#     s = set()
+#     r = []
+#     for i in lst:
+#         if i not in s:
+#             r.append(i)
+#             s.add(i)
+#     return r
 
 
 def ranges_overwrapping(range1: Tuple[int, int], range2: Tuple[int, int]) -> bool:

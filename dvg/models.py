@@ -1,14 +1,13 @@
-from typing import Callable, List, Iterable, Optional, Tuple
+from typing import Callable, List, Iterable, Optional
 
 from glob import glob
 import itertools
 import os
 import sys
 
-import numpy as np
 import toml
 
-from .scdv_embedding import Vec, SCDVEmbedding, read_scdv_embedding
+from .scdv_embedding import Vec, read_scdv_embedding
 from .scdv_embedding import inner_product_n  # DO NOT remove this. re-exporting it
 
 
@@ -87,7 +86,7 @@ class SCDVModel:
     def set_query(self, lines: List[str]):
         self._optimize_for_query_lines(lines)
         self.query_vec = self._query_to_vec(lines)
-    
+
     def get_query_vec(self) -> Vec:
         return self.query_vec
 

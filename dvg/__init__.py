@@ -7,8 +7,6 @@ from . import models
 from . import scanners
 from . import iter_funcs
 from . import text_funcs
-from . import main
-
-from .main import main
-
+from . import search_result
+from . import dvg
 from . import dvgi

@@ -6,7 +6,7 @@ import os
 import sys
 import tempfile
 
-from dvg.main import prune_overlapped_paragraphs, expand_file_iter
+from dvg.dvg import prune_overlapped_paragraphs, expand_file_iter
 
 
 @contextlib.contextmanager

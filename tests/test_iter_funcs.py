@@ -2,17 +2,16 @@ from typing import *
 
 import random
 import unittest
-import itertools
 
 from dvg.iter_funcs import *
 
 
 class IterFuncsTest(unittest.TestCase):
-    def test_remove_non_first_appearances(self):
-        lst = [1, 2, 3, 4, 2, 3, 2, 1]
-        actual = remove_non_first_appearances(lst)
-        expected = [1, 2, 3, 4]
-        self.assertSequenceEqual(actual, expected)
+    # def test_remove_non_first_appearances(self):
+    #     lst = [1, 2, 3, 4, 2, 3, 2, 1]
+    #     actual = remove_non_first_appearances(lst)
+    #     expected = [1, 2, 3, 4]
+    #     self.assertSequenceEqual(actual, expected)
 
     def test_ranges_overwrapping(self):
         rand = random.Random(123)
@@ -97,6 +96,7 @@ class IterFuncsTest(unittest.TestCase):
                 poss,
                 [(0, 6)],
             )
+
 
 if __name__ == "__main__":
     unittest.main()
