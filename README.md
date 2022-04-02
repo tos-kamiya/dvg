@@ -88,6 +88,7 @@ Example of searching from dictionary data [Webster's Unabridged English Dictiona
 | Situnation | Solution |
 | --- | --- |
 | When I try to run dvg, I get an error message like **"dvg: command not found "**. | The commmand seems not on path. If you are using macOS, try running `~/Library/Python/3.8/bin/dvg` . |
+| While running dvg, a warning message **"None of PyTorch, TensorFlow >= 2.0, or Flax have been found..." appears. | Please install PyTorch as described in the installation instructions. | 
 
 ## Acknowledgements
 

@@ -10,13 +10,20 @@ The following steps have been checked on Ubuntu 20.04 and macOS Catalina (+Comma
 python3 -m pip install --user dvg
 ```
 
+(2) Install pdftotext **(option)**
+
+If you want to search PDF files, install `pdftotext` according to the instructions at https://github.com/jalan/pdftotext.
+
+(3) Japanese Model **(option)** 
+
 If you want to use the Japanese model, please install it with `[ja]` as follows:
 
 ```sh
 python3 -m pip install --user dvg[ja]
 ```
 
-(2) Install pdftotext **(option)**
+However, if you run dvg without PyTorch, Tensorflow, or Flax installed, you will get the warning message **"None of PyTorch, TensorFlow >= 2.0, or Flax have been found. ..."** This will not have any harmful effect on execution, but if you are concerned about the warning message, please install PyTorch as follows.
 
-If you want to search PDF files, install `pdftotext` according to the instructions at https://github.com/jalan/pdftotext.
-
+```sh
+python3 -m pip install --user torch
+```

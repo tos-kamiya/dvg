@@ -11,6 +11,12 @@ pip install wheel
 pip install dvg[ja]
 ```
 
+ただし、PyTorch、Tensorflow, Flaxのいずれもインストールしていない場合には、dvgを実行すると **「None of PyTorch, TensorFlow >= 2.0, or Flax have been found. ...」** という警告メッセージが出力されるため（実行に支障はありませんが）、気になる場合には次のようにしてPyTorchをインストールしてください。
+
+```sh
+pip install torch
+```
+
 (2) NKFをインストール **(推奨)**
 
 **文字コードがUTF-8のテキストファイルも検索対象にするには、NKFをインストールしてください。**
