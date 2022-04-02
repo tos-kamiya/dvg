@@ -82,7 +82,7 @@ Verboseオプションです。指定すると、検索の進行中に、その�
 
 | 状況 | 対策 |
 | --- | --- |
-| dvgを実行しようとすると **「ModuleNotFoundError: No module named 'fugashi'」** といったエラーメッセージが出る。 | pipコマンドで`pip3 install dvg-xxxxxxxx-py3-none-any.whl[ja]`のように`[ja]`をつけて再インストールしてください。 |
+| dvgを実行しようとすると **「ModuleNotFoundError: No module named 'fugashi'」** といったエラーメッセージが出る。 | pipコマンドで`pip3 dvg[ja]`のように`[ja]`をつけて再インストールしてください。 |
 | dvgを実行中に **「UnicodeEncodeError: 'cp932' codec can't encode character ...」** とっいたエラーメッセージが出る。 | ファイルの文字コードに関するエラーです。Windows上で実行している場合は「NKFのインストール」を行ってみてください。 |
 
 ## 謝辞
