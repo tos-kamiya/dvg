@@ -13,7 +13,7 @@ Supports searching within text files (.txt), PDF files (.pdf), and MS Word files
 
 Basically, it can be installed with `pip dvg`, but if you want to target PDF files or Japanese documents in addition to English, you need to install an option.
 
-&rarr; [Installation on Ubuntu](docs/installation-on-ubuntu.md)  
+&rarr; [Installation on Ubuntu/macOS](docs/installation-on-ubuntu.md)  
 &rarr; [Installation on Windows](docs/installation-on-windows.md)  
 
 ## TL;DR (typical usage)
@@ -82,6 +82,12 @@ Example of searching from dictionary data [Webster's Unabridged English Dictiona
 ## Indexing (experimental)
 
 &rarr; [Indexing](docs/indexing.md)  
+
+## Troubleshoot
+
+| Situnation | Solution |
+| --- | --- |
+| When I try to run dvg, I get an error message like **"dvg: command not found "**. | The commmand seems not on path. If you are using macOS, try running `~/Library/Python/3.8/bin/dvg` . |
 
 ## Acknowledgements
 

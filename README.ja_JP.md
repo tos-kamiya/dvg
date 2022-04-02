@@ -11,7 +11,7 @@ SCDVモデルを使って、クエリのフレーズに似た部分を含む文�
 
 基本的には`pip dvg[ja]`でインストールできますが、文字コードの自動判定やPDFのファイルを対象にするには、オプションのインストールを行ってください。
 
-&rarr; [Ubuntuでのインストール](docs/installation-on-ubuntu.ja_JP.md)  
+&rarr; [Ubuntu/macOSでのインストール](docs/installation-on-ubuntu.ja_JP.md)  
 &rarr; [Windowsでのインストール](docs/installation-on-windows.ja_JP.md)  
 
 ## TL;DR（典型的な利用法）
@@ -83,6 +83,7 @@ Verboseオプションです。指定すると、検索の進行中に、その�
 | 状況 | 対策 |
 | --- | --- |
 | dvgを実行しようとすると **「ModuleNotFoundError: No module named 'fugashi'」** といったエラーメッセージが出る。 | pipコマンドで`pip3 dvg[ja]`のように`[ja]`をつけて再インストールしてください。 |
+| dvgを実行しようとすると **「dvg: command not found」** といったエラーメッセージが出る。 | パスが通っていないので、macOSなら`~/Library/Python/3.8/bin/dvg`を実行してみてください。 |
 | dvgを実行中に **「UnicodeEncodeError: 'cp932' codec can't encode character ...」** とっいたエラーメッセージが出る。 | ファイルの文字コードに関するエラーです。Windows上で実行している場合は「NKFのインストール」を行ってみてください。 |
 
 ## 謝辞

@@ -1,13 +1,13 @@
-## Ubuntuでのインストール
+## Ubuntu/macOSでのインストール
 
-下記の手順はUbuntu 20.04で確認したものです。
+下記の手順はUbuntu 20.04とmacOS Catalina (コマンドライン・デベロッパツール)で確認したものです。
 
 Pythonのバージョン`3.8`から`3.10`に対応しています。
 
 (1) `dvg`をインストール
 
 ```sh
-pip3 dvg[ja]
+python3 -m pip install --user dvg[ja]
 ```
 
 (2) pdftotextをインストール **（任意)**
