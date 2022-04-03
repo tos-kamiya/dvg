@@ -11,7 +11,7 @@ SCDVモデルを使って、クエリのフレーズに似た部分を含む文�
 
 基本的には`pip dvg[ja]`でインストールできますが、文字コードの自動判定やPDFのファイルを対象にするには、オプションのインストールを行ってください。
 
-&rarr; [Ubuntu/macOSでのインストール](docs/installation-on-ubuntu.ja_JP.md)  
+&rarr; [Ubuntu / macOSでのインストール](docs/installation-on-ubuntu.ja_JP.md)  
 &rarr; [Windowsでのインストール](docs/installation-on-windows.ja_JP.md)  
 
 ## TL;DR（典型的な利用法）

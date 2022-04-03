@@ -1,6 +1,6 @@
-## Ubuntu/macOSでのインストール
+## Ubuntu / macOSでのインストール
 
-下記の手順はUbuntu 20.04とmacOS Catalina (コマンドライン・デベロッパツール)で確認したものです。
+下記の手順はUbuntu 20.04とmacOS Catalina (+ コマンドライン・デベロッパツールのPython)で確認したものです。
 
 Pythonのバージョン`3.8`から`3.10`に対応しています。
 

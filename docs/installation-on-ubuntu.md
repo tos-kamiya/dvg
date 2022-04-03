@@ -1,6 +1,6 @@
-## Installation on Ubuntu/macOS
+## Installation on Ubuntu / macOS
 
-The following steps have been checked on Ubuntu 20.04 and macOS Catalina (+Command Line Developer Tools).
+The following steps have been checked on Ubuntu 20.04 and macOS Catalina (+ Python of Command Line Developer Tools).
 
 `dvg` is compatible with Python versions from `3.8` to `3.10`.
 
