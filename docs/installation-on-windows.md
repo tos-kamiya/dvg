@@ -27,8 +27,6 @@ Then, add a directory where `pdftotext.exe` is located to your PATH. For example
 
 Make sure you can run pdftotext from a DOS prompt, etc.
 
-![](images/win-pdftotext.png)
-
 (3) Japanese Model **(option)** 
 
 If you want to use the Japanese model, please install it with `[ja]` as follows:

@@ -83,12 +83,29 @@ Example of searching from dictionary data [Webster's Unabridged English Dictiona
 
 &rarr; [Indexing](docs/indexing.md)  
 
-## Troubleshoot
+## Troubleshooting
 
-| Situnation | Solution |
-| --- | --- |
-| When I try to run dvg, I get an error message like **"dvg: command not found "**. | The commmand seems not on path. If you are using macOS, try running `~/Library/Python/3.8/bin/dvg` . |
-| While running dvg, a warning message **"None of PyTorch, TensorFlow >= 2.0, or Flax have been found..."** appears. | Please install PyTorch as described in the installation instructions. | 
+#### When I try to run dvg, I get an error message like "dvg: command not found ".
+
+The `dvg` executable does not seem on PATH.
+
+If you are using Windows, check the PATH variable in Advanced system settings -> Environment Variables.
+
+If you are using macOS, check the PATH variable in `.zprofile` .
+
+If you do not want to set the PATH environment variable for some reason, you can also run:
+
+```sh
+python3 -m dvg dvg ...  # Runs the dvg script
+```
+
+```sh
+python3 -m dvg dvgi ...  # Runs the dvgi script
+```
+
+#### While running dvg, a warning message "None of PyTorch, TensorFlow >= 2.0, or Flax have been found..." appears.
+
+Please install PyTorch as described in the installation instructions.
 
 ## Acknowledgements
 
