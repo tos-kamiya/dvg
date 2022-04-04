@@ -1,5 +1,7 @@
 ## Installation on Windows
 
+The following steps have been checked on Windows 10 (+ Python distributed on the [official Python website](https://www.python.org)).
+
 `dvg` is compatible with Python versions from `3.8` to `3.10`.
 
 (1) Install `dvg`
@@ -11,15 +13,19 @@ pip install dvg
 
 (2) Install pdftotext. **(option)**
 
-If you want to search PDF files, please install `poppler`.
+If you want to search PDF files, please install `poppler` according to either (2.1) or (2.2) below.
 
-If you are using [Chocolatey](https://chocolatey.org/), you can install Poppler as follows:
+(2.1) Use [Chocolatey](https://chocolatey.org/)
+
+You can install Poppler as follows:
 
 ```sh
 choco install poppler
 ```
 
-If you want to install Poppler manually, first download and extract Poppler from the following page.
+(2.2) Install Poppler manually.
+
+Download and extract Poppler from the following page.
 
 https://blog.alivate.com.au/poppler-windows/
 

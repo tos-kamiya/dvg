@@ -1,8 +1,8 @@
 ## Windowsでのインストール
 
-Pythonのバージョン`3.8`から`3.10`までに対応しています。
+下記の手順は Windows 10 (+ [Python公式webサイト](https://www.python.org) で配布しているPython)で確認したものです。
 
-![](images/win-pdftotext.png)
+Pythonのバージョン`3.8`から`3.10`までに対応しています。
 
 (1) `dvg`をインストール
 
@@ -35,15 +35,19 @@ dvg --bin-dir
 
 (3) pdftotextをインストール **（任意)**
 
-PDFファイルを検索対象としたい場合には、`poppler`をインストールしてください。
+PDFファイルを検索対象としたい場合には、次の(3.1)または(3.2)のいずれかの方法により`poppler`をインストールしてください。
 
-[Chocolatey](https://chocolatey.org/)を利用している場合には、Popplerを次でインストールしてください。
+(3.1) [Chocolatey](https://chocolatey.org/)を利用する
+
+次でインストールしてください。
 
 ```
 choco install poppler
 ```
 
-Popplerを手動でインストーする場合には、まず、Popplerを次のページからダウンロードして展開してください。
+(3.2) Popplerを手動でインストーする
+
+まず、Popplerを次のページからダウンロードして展開してください。
 
 https://blog.alivate.com.au/poppler-windows/
 
