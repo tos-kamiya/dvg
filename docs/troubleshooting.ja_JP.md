@@ -9,8 +9,13 @@ pipコマンドで`pip3 dvg[ja]`のように`[ja]`をつけて再インストー
 `dvg`の実行ファイルにPATHが通っていないようです。
 
 Windowsを使っている場合は、システムの詳細設定→環境変数から、PATH変数を確認してください。
+`C:\Users\<username>\AppData\Local\Programs\Python\Python39\Scripts\` (パスは利用しているPythonのバージョンによって異なります）が含まれるようにしてください。
 
 macOSを使っている場合は、`.zprofile`のPATH変数を確認してください。
+`~/Python/3.8/bin` (パスは利用しているPythonのバージョンによって異なります）が含まれるようにしてください。
+
+Ubuntuを使っている場合は、`~/.profile` や `~/.bashrc` 等のシェル設定ファイルでのPATH変数を確認してください。
+`~/.local/bin` が含まれるようにしてください。
 
 何らかの理由により、環境変数PATHを設定したくない場合には、次のように実行することもできます。
 

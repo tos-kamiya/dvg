@@ -5,8 +5,12 @@
 The `dvg` executable does not seem on PATH.
 
 If you are using Windows, check the PATH variable in Advanced system settings -> Environment Variables.
+Make sure `C:\Users\<username>\AppData\Local\Programs\Python\Python39\Scripts\` (the path may differ depending on the version of Python you are running) is included.
 
-If you are using macOS, check the PATH variable in `.zprofile` .
+If you are using macOS, check the PATH variable in `~/.zprofile` .
+Make sure `~/Python/3.8/bin` (the path may differ depending on the version of Python you are running) is included.
+
+If you are using Ubuntu, check the PATH variable in shell configuration files, such as `~/.profile`, `~/.bashrc`, etc. Make sure `~/.local/bin` is included.
 
 If you do not want to set the PATH environment variable for some reason, you can still run the dvg scripts:
 
