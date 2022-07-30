@@ -6,6 +6,17 @@ The following steps have been checked on Windows 10 (+ Python distributed on the
 
 (1) Install `dvg`
 
+To make `dvg` compatible with both `docopt` and `docopt-ng`, dependencies on them are now explicitly extra dependencies.
+
+If you know either `docopt` or `docopt-ng` is already installed on your system, skip the following
+(In other words, if you are unsure `docopt` or `docopt-ng` is installed on your system, try the following):
+
+```sh
+pip install docopt-ng
+```
+
+Then install dvg as follows:
+
 ```sh
 pip install wheel
 pip install dvg

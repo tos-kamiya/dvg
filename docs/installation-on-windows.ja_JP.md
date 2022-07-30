@@ -6,12 +6,23 @@ Pythonのバージョン`3.8`から`3.10`までに対応しています。
 
 (1) `dvg`をインストール
 
+`dvg`を`docopt`と`docopt-ng`の双方と互換性を持たせるため、それらへの依存はextra dependencyとして記述しました。
+
+システムに`docopt`か`docopt-ng`がインストールされているとわかっている場合には、次のコマンドラインはスキップしてください
+（言い換えると、`docopt`や`docopt-ng`のインストールが不明の場合には、次のコマンドラインを試してみてください）
+
+```sh
+pip install docopt-ng
+```
+
+あとは、dvgを次のようにしてインストールしてください。
+
 ```sh
 pip install wheel
 pip install dvg[ja]
 ```
 
-ただし、PyTorch、Tensorflow, Flaxのいずれもインストールしていない場合には、dvgを実行すると **「None of PyTorch, TensorFlow >= 2.0, or Flax have been found. ...」** という警告メッセージが出力されるため（実行に支障はありませんが）、気になる場合には次のようにしてPyTorchをインストールしてください。
+PyTorch、Tensorflow, Flaxのいずれもインストールしていない場合には、dvgを実行すると **「None of PyTorch, TensorFlow >= 2.0, or Flax have been found. ...」** という警告メッセージが出力されるため（実行に支障はありませんが）、気になる場合には次のようにしてPyTorchをインストールしてください。
 
 ```sh
 pip install torch

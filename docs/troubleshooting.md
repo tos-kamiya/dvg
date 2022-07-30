@@ -1,5 +1,9 @@
 ## Troubleshooting
 
+### <a id="no-docopt" /> When I try to run dvg, I get an error message like: "ModuleNotFoundError: No module named 'docopt'".
+
+You need to install either `docopt` or `docopt-ng` package. Run `pip3 install docopt-ng`.
+
 ### <a id="command-not-found" /> When I try to run dvg, I get an error message like "dvg: command not found ".
 
 The `dvg` executable does not seem on PATH.

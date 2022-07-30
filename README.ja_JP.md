@@ -80,6 +80,8 @@ Verboseオプションです。指定すると、検索の進行中に、その�
 
 ## トラブルシューティング
 
+&rarr; [dvgを実行しようとすると、「ModuleNotFoundError: No module named 'docopt'」といったエラーメッセージが出る。](docs/troubleshooting.ja_JP.md#no-docopt)
+
 &rarr; [dvgを実行しようとすると 「ModuleNotFoundError: No module named 'fugashi'」といったエラーメッセージが出る。](docs/troubleshooting.ja_JP.md#no-fugashi)
 
 &rarr; [dvgを実行しようとすると 「dvg: command not found」といったエラーメッセージが出る。](docs/troubleshooting.ja_JP.md#command-not-found)

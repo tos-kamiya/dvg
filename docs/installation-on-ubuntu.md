@@ -6,8 +6,18 @@ The following steps have been checked on Ubuntu 20.04 and macOS Catalina (+ Pyth
 
 (1) Install `dvg`.
 
+To make `dvg` compatible with both `docopt` and `docopt-ng`, dependencies on them are now explicitly extra dependencies.
+
+If you know either `docopt` or `docopt-ng` is already installed on your system, just try the following:
+
 ```sh
 python3 -m pip install --user dvg
+```
+
+If you are unsure `docopt` or `docopt-ng` is installed on your system, try the following:
+
+```sh
+python3 -m pip install --user dvg[docopt-ng]
 ```
 
 (2) Install pdftotext **(option)**

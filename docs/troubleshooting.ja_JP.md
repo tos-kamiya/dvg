@@ -1,8 +1,12 @@
 ## トラブルシューティング
 
+### <a id="no-docopt" /> dvgを実行しようとすると、「ModuleNotFoundError: No module named 'docopt'」といったエラーメッセージが出る。
+
+`docopt`または`docopt-ng`パッケージのインストールが必要です。pipコマンドで`pip3 install docopt-ng`を実行してください。
+
 ### <a id="no-fugashi" /> dvgを実行しようとすると 「ModuleNotFoundError: No module named 'fugashi'」といったエラーメッセージが出る。
 
-pipコマンドで`pip3 dvg[ja]`のように`[ja]`をつけて再インストールしてください。 
+pipコマンドで`pip3 install dvg[ja]`のように`[ja]`をつけて再インストールしてください。 
 
 ### <a id="command-not-found" /> dvgを実行しようとすると 「dvg: command not found」といったエラーメッセージが出る。
 
