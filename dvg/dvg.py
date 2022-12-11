@@ -55,7 +55,8 @@ DEFAULT_PREFER_LONGER_THAN = 80
 
 
 class CLArgs(InitAttrsWKwArgs):
-    query: str
+    query: Optional[str]
+    query_file: Optional[str]
     file: List[str]
     verbose: bool
     model: str
@@ -77,6 +78,7 @@ __doc__: str = """Document-vector Grep.
 
 Usage:
   dvg [options] [-i TEXT]... [-e TEXT]... -m MODEL <query> <file>...
+  dvg [options] [-i TEXT]... [-e TEXT]... -m MODEL -f QUERYFILE <file>...
   dvg --help
   dvg --version
 
@@ -86,6 +88,7 @@ Options:
   --top-n=NUM, -n NUM           Show top NUM files [default: {dtn}].
   --paragraph-search, -p        Search paragraphs in documents.
   --window=NUM, -w NUM          Line window size [default: {dws}].
+  --query-file=QUERYFILE, -f QUERYFILE  Read query text from the file.
   --include=TEXT, -i TEXT       Requires containing the specified text.
   --exclude=TEXT, -e TEXT       Requires not containing the specified text.
   --min-length=CHARS, -l CHARS  Paragraphs shorter than this get a penalty [default: {dplt}].
@@ -96,6 +99,22 @@ Options:
 """.format(
     dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dec=DEFAULT_EXCERPT_CHARS
 )
+
+
+def do_extract_query_lines(query: Optional[str], query_file: Optional[str]) -> List[str]:
+    if query == '-' or query_file == '-':
+        lines = sys.stdin.read().splitlines()
+    elif query_file is not None:
+        scanner = Scanner()
+        try:
+            lines = scanner.scan(query_file)
+        except ScanError as e:
+            sys.exit("Error in reading query file: %s" % e)
+        finally:
+            del scanner
+    else:
+        lines = scanner.to_lines(a.query)
+    return lines
 
 
 def expand_file_iter(target_files: Iterable[str]) -> Iterator[str]:
@@ -195,16 +214,14 @@ def main():
     raw_args = docopt(__doc__, argv=argv, version="dvg %s" % VERSION)
     a = CLArgs(_cast_str_values=True, **raw_args)
 
-    # 1. model
     s = find_model_specs(a.model)
     if s is None:
         sys.exit("Error: model not found: %s" % a.model)
     tokenizer, model_file = s.tokenizer_name, s.model_file_path
     model = SCDVModel(tokenizer, model_file)
 
-    # 2. query
-    query_lines = [a.query]
-    model.set_query(query_lines)
+    lines = do_extract_query_lines(a.query, a.query_file)
+    model.set_query(lines)
 
     count_document_files = 0
     chunk_size = 10000

@@ -21,7 +21,7 @@ from .scdv_embedding import sparse
 from .search_result import ANSI_ESCAPE_CLEAR_CUR_LINE, SLPPD, excerpt_text, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
 from .text_funcs import includes_all_texts, includes_any_of_texts
 
-from .dvg import expand_file_iter, model_shared, model_shared_close
+from .dvg import expand_file_iter, model_shared, model_shared_close, do_extract_query_lines
 from .dvg import DEFAULT_TOP_N, DEFAULT_WINDOW_SIZE, DEFAULT_EXCERPT_CHARS, DEFAULT_PREFER_LONGER_THAN
 
 
@@ -33,7 +33,8 @@ class CLArgs(InitAttrsWKwArgs):
     build: bool
     search: bool
     ls: bool
-    query: str
+    query: Optional[str]
+    query_file: Optional[str]
     file: List[str]
     verbose: bool
     model: str
@@ -56,6 +57,7 @@ __doc__: str = """Dvg with index DB.
 Usage:
   dvgi --build [-w WINDOW] [-j WORKERS] -m MODEL <file>...
   dvgi [--search] [options] [-H] [-w WINDOW] [-j WORKERS] [-P RATIO] -m MODEL <query> <file>...
+  dvgi [--search] [options] [-H] [-w WINDOW] [-j WORKERS] [-P RATIO] -m MODEL -f QUERYFILE <file>...
   dvgi --ls [-H] [-w WINDOW] [-j WORKERS] -m MODEL <file>...
   dvgi --help
   dvgi --version
@@ -69,6 +71,7 @@ Options:
   --top-n=NUM, -n NUM           Show top NUM files [default: {dtn}].
   --paragraph-search, -p        Search paragraphs in documents.
   --window=NUM, -w NUM          Line window size [default: {dws}].
+  --query-file=QUERYFILE, -f QUERYFILE  Read query text from the file.
   --include=TEXT, -i TEXT       Requires containing the specified text.
   --exclude=TEXT, -e TEXT       Requires not containing the specified text.
   --min-length=CHARS, -l CHARS  Paragraphs shorter than this get a penalty [default: {dplt}].
@@ -343,7 +346,7 @@ def main():
         if not os.path.exists(index_file_name):
             sys.exit("Error: index db file not found: %s" % index_file_name)
 
-        lines = scanner.to_lines(a.query)
+        lines = do_extract_query_lines(a.query, a.query_file)
 
         query_clusters = calc_clusters(lines, model)
         query_c_to_n = [0.0] * len(query_clusters)
