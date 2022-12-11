@@ -9,6 +9,7 @@ from multiprocessing import Pool
 import os
 import sys
 import time
+import unicodedata
 
 from docopt import docopt
 from init_attrs_with_kwargs import InitAttrsWKwArgs
@@ -389,6 +390,7 @@ def main():
                     break
                 para = lines[b:e]
                 excerpt = excerpt_text(para, model.similarity_to_lines, a.excerpt_length)
+                excerpt = unicodedata.normalize('NFKC', excerpt)
                 print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, para_len, df, b + 1, e, excerpt))
         finally:
             if shms is not None:
