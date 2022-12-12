@@ -3,6 +3,8 @@
 &rarr; doc [main](https://github.com/tos-kamiya/dvg/) | [dev](https://github.com/tos-kamiya/dvg/tree/dev)  
 &rarr; Japanese doc [main](https://github.com/tos-kamiya/dvg/blob/main/README.ja_JP.md) | [dev](https://github.com/tos-kamiya/dvg/blob/dev/README.ja_JP.md)  
 
+⚠️ Warning: Version 1.0.0b7 was badly enbuged, so if you have installed it, please update to 1.0.0b8 immediately!
+
 # dvg
 
 `dvg` is an off-the-shelf grep tool that performs semantic similarity search, for Windows, macOS, and Ubuntu.
@@ -66,7 +68,6 @@ The length of the excerpt displayed in the rightmost column of the search result
 
 `--header, -H`  
 Add a heading line to the output.
-
 
 `--worker=NUM, -j NUM`  
 Number of worker processes. Option to run in parallel.
