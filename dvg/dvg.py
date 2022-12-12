@@ -114,7 +114,8 @@ def do_extract_query_lines(query: Optional[str], query_file: Optional[str]) -> L
         finally:
             del scanner
     else:
-        lines = scanner.to_lines(a.query)
+        scanner = Scanner()
+        lines = scanner.to_lines(query)
     return lines
 
 
