@@ -1,5 +1,7 @@
 [![Tests](https://github.com/tos-kamiya/dvg/actions/workflows/tests.yaml/badge.svg)](https://github.com/tos-kamiya/dvg/actions/workflows/tests.yaml) [![CodeQL](https://github.com/tos-kamiya/dvg/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tos-kamiya/dvg/actions/workflows/codeql-analysis.yml)
 
+⚠️ お断り: バージョン 1.0.0b7 はひどいエンバグをしていたので、インストールしてしまった場合には、すぐに 1.0.0b8 にアップデートしてください。
+
 # dvg
 
 `dvg`は、インストールすれば即利用可能な、意味的類似検索を行うコマンドラインgrepツールです。Windows, macOS, Ubuntuに対応しています。
