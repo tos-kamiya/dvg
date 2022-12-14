@@ -39,7 +39,7 @@ Each line of output is, from left to right, similarity (the closer the number is
 `--verbose, -v`  
 Verbose option. If specified, it will show the documents that have the highest similarity at that time.
 
-`--model=MODEL, -m MODEL`.  
+`--model=MODEL, -m MODEL`  
 The available models are `en` (for English documents) and `ja` (for Japanese documents).
 
 `--top-n=NUM, -n NUM`  
@@ -53,6 +53,12 @@ If this option is not specified, one document file will be considered as one doc
 `--window=NUM, -w NUM`  
 A chunk of lines specified by this number will be recognized as a paragraph.
 The default value is 20.
+
+`--query-file=QUERYFILE, -f QUERYFILE`  
+Read query text from the file.
+The query file could be a PDF as well as a text file, like document files.
+
+(As far as I have tried, when the query is specified as a file, better results tend to be obtained by increasing the size of the paragraph with the --window option, e.g. `-w 80`)
 
 `--include=TEXT, -i TEXT`  
 Only paragraphs that contain the specified string will be included in the search results.
