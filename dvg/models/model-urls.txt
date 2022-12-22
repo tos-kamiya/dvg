@@ -1,0 +1,3 @@
+en v4 1ffac7be67229177f51b9694b2b3e7b39ba044328511a0a4d4109ac3988266ae https://www.toshihirokamiya.com/dvg/enwiki-scdv-v4.tar.gz
+ja v4 d2e3e7a318991460328ae3745fef79be99e49a5eae8b43a74535af530a750349 https://www.toshihirokamiya.com/dvg/jawiki-scdv-v4.tar.gz
+

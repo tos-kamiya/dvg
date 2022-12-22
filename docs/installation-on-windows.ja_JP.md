@@ -36,7 +36,7 @@ pip install torch
 [ネットワーク用漢字コード変換フィルタ シフトJIS,EUC-JP,ISO-2022-JP,UTF-8,UTF-16](https://www.vector.co.jp/soft/win95/util/se295331.html)
 からダウンロードして展開したディレクトリ「vc2005 > win32(98,Me,NT,2000,XP,Vista,7)Windows-31J」の中にあるファイル`nkf32.exe`を利用します。
 
-dvgのbinディレクトリを、DOSプロンプトなどで次を実行することで確認してください。
+dvgのbinディレクトリを、コマンドプロンプトなどで次を実行することで確認してください。
 
 ```sh
 dvg --bin-dir
@@ -64,4 +64,13 @@ https://blog.alivate.com.au/poppler-windows/
 
 次に、展開した先の、`pdftotext.exe`があるディレクトリ（例えば、展開した先が "C:\Users\toshihiro\apps\poppler-0.68.0_x86\poppler-0.68.0" なら "C:\Users\toshihiro\apps\poppler-0.68.0_x86\poppler-0.68.0\bin\" )にPATHを通してください。
 
-DOSプロンプト等から、pdftotextを実行できることを確認してください。
+コマンドプロンプト等から、pdftotextを実行できることを確認してください。
+
+(3) データファイルのダウンロード **(任意)**
+
+ツール `dvg` は単語トークン化および SCDV モデルのデータファイルを必要とします。これらのファイルは必要に応じて実行時に動的にダウンロードされますが、事前にダウンロードしておくことも可能です。
+
+```sh
+dvg -m en --diagnostic
+dvg -m ja --diagnostic
+```

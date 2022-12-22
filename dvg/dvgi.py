@@ -16,7 +16,7 @@ from init_attrs_with_kwargs import InitAttrsWKwArgs
 from numpy.linalg import norm
 
 from .iter_funcs import chunked_iter, sliding_window_iter
-from .models import SCDVModel, find_model_specs
+from .models import SCDVModel, do_find_model_spec
 from .scanners import Scanner, ScanError
 from .scdv_embedding import sparse
 from .search_result import ANSI_ESCAPE_CLEAR_CUR_LINE, SLPPD, excerpt_text, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
@@ -161,7 +161,7 @@ def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: 
         try:
             lines = scanner.scan(df)
         except ScanError as e:
-            print("> Warning: %s" % e, file=sys.stderr)
+            print("> Warning: %s" % e, file=sys.stderr, flush=True)
             continue  # for df
         for pos in sliding_window_iter(len(lines), a.window):
             pos_b, pos_e = pos
@@ -231,7 +231,7 @@ def calc_para_similarity(df_mt_pos_it: Iterable[Tuple[str, int, Tuple[int, int]]
             try:
                 lines = scanner.scan(df)
             except ScanError as e:
-                print("> Warning: %s" % e, file=sys.stderr)
+                print("> Warning: %s" % e, file=sys.stderr, flush=True)
                 continue  # for df
             prev_df_mt = (df, df_mt)
         assert lines is not None
@@ -284,10 +284,8 @@ def main():
     raw_args = docopt(__doc__, argv=argv, version="dvg %s" % VERSION)
     a = CLArgs(_cast_str_values=True, **raw_args)
 
-    s = find_model_specs(a.model)
-    if s is None:
-        sys.exit("Error: model not found: %s" % a.model)
-    tokenizer, model_file = s.tokenizer_name, s.model_file_path
+    s = do_find_model_spec(a.model)
+    tokenizer, model_file = s.tokenizer_name, s.file_path
     index_file_name = os.path.join(".dvg", "%s.w%d.clu" % (os.path.basename(model_file), a.window))
 
     model = SCDVModel(tokenizer, model_file)
@@ -362,7 +360,7 @@ def main():
         try:
             # search for document files that are similar to the query
             if a.verbose:
-                print("", end="", file=sys.stderr)
+                print("", end="", file=sys.stderr, flush=True)
             search_results: List[SLPPD] = []
             count_document_files = 0
             try:
@@ -376,10 +374,10 @@ def main():
                             print_intermediate_search_result(search_results, count_document_files, time.time() - t0)
             except KeyboardInterrupt:
                 if a.verbose:
-                    print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> Interrupted. Shows the search results up to now.\n" + "> number of document files: %d" % count_document_files, file=sys.stderr)
+                    print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> Interrupted. Shows the search results up to now.\n" + "> number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
             else:
                 if a.verbose:
-                    print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> number of document files: %d" % count_document_files, file=sys.stderr)
+                    print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
 
             # output search results
             trim_search_results(search_results, a.top_n)

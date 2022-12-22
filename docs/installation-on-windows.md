@@ -42,9 +42,18 @@ https://blog.alivate.com.au/poppler-windows/
 
 Then, add a directory where `pdftotext.exe` is located to your PATH. For example, if the extracted directory is "C:\Users\toshihiro\apps\poppler-0.68.0_x86\poppler-0.68.0" then add "C:\Users\toshihiro\apps\pdftotext.exe poppler-0.68.0_x86\poppler-0.68.0\bin\" to PATH.
 
-Make sure you can run pdftotext from a DOS prompt, etc.
+Make sure you can run pdftotext from (such as) a command prompt.
 
-(3) Japanese Model **(option)** 
+(3) Download data files **(option)**
+
+Tool `dvg` needs data files of word tokenization and SCDV model.
+These files are downloaded dynamically when needed at runtime, but can also be downloaded in advance.
+
+```sh
+dvg -m en --diagnostic
+```
+
+(4) Japanese Model **(option)** 
 
 If you want to use the Japanese model, please install it with `[ja]` as follows:
 
@@ -57,3 +66,10 @@ However, if you run dvg without PyTorch, Tensorflow, or Flax installed, you will
 ```sh
 pip install torch
 ```
+
+To download the data file for Japanese in advance, run the following command line:
+
+```sh
+dvg -m ja --diagnostic
+```
+

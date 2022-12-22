@@ -29,3 +29,12 @@ python3 -m pip install --user torch
 (2) pdftotextをインストール **（任意)**
 
 PDFファイルを検索対象としたい場合には、`pdftotext`を記述 https://github.com/jalan/pdftotext に従ってインストールしてください。
+
+(3) データファイルのダウンロード **(任意)**
+
+ツール `dvg` は単語トークン化および SCDV モデルのデータファイルを必要とします。これらのファイルは必要に応じて実行時に動的にダウンロードされますが、事前にダウンロードしておくことも可能です。
+
+```sh
+dvg -m en --diagnostic
+dvg -m ja --diagnostic
+```

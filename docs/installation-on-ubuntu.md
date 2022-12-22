@@ -24,7 +24,16 @@ python3 -m pip install --user dvg[docopt-ng]
 
 If you want to search PDF files, install `pdftotext` according to the instructions at https://github.com/jalan/pdftotext.
 
-(3) Japanese Model **(option)** 
+(3) Download data files **(option)**
+
+Tool `dvg` needs data files of word tokenization and SCDV model.
+These files are downloaded dynamically when needed at runtime, but can also be downloaded in advance.
+
+```sh
+dvg -m en --diagnostic
+```
+
+(4) Japanese Model **(option)** 
 
 If you want to use the Japanese model, please install it with `[ja]` as follows:
 
@@ -37,3 +46,10 @@ However, if you run dvg without PyTorch, Tensorflow, or Flax installed, you will
 ```sh
 python3 -m pip install --user torch
 ```
+
+To download the data file for Japanese in advance, run the following command line:
+
+```sh
+dvg -m ja --diagnostic
+```
+

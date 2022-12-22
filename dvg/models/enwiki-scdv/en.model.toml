@@ -1,3 +1,0 @@
-type = "scdv"
-tokenizer = "en"
-file = "en.v3.pkl"
