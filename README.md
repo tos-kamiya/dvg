@@ -3,7 +3,7 @@
 &rarr; doc [main](https://github.com/tos-kamiya/dvg/) | [dev](https://github.com/tos-kamiya/dvg/tree/dev)  
 &rarr; Japanese doc [main](https://github.com/tos-kamiya/dvg/blob/main/README.ja_JP.md) | [dev](https://github.com/tos-kamiya/dvg/blob/dev/README.ja_JP.md)  
 
-⚠️ Warning: In version 1.0.0b9, the model files have been revamped and now have a larger vocabulary and (vector) dimension. You may notice that the tool connects to the distribution site (https://toshihirokamiya.com) to download the data file when you run `dvg`.  
+⚠️ Warning: In version 1.0.0b9, the model files have been revamped and now have a larger vocabulary and (vector) dimension. You may notice that `dvg` connects to the distribution site (https://toshihirokamiya.com) to download the data file when you run the tool.  
 
 ⚠️ Warning: Version 1.0.0b7 was badly enbuged, so if you have installed it, please update to 1.0.0b8 immediately!  
 
@@ -101,6 +101,11 @@ Example of searching from dictionary data [Webster's Unabridged English Dictiona
 
 &rarr; [While running dvg, a warning message "None of PyTorch, TensorFlow >= 2.0, or Flax have been found..." appears.](docs/troubleshooting.md#none-of-pytorch)
 
+## Todo
+
+- [ ] Replace the example figure in the README with one with the new model.
+- [ ] Replace wildcard expansion in Windows with one using `win_wildcard`.
+
 ## Acknowledgements
 
 Thanks to Wikipedia for releasing a huge corpus of languages:  
@@ -112,7 +117,7 @@ dvg is distributed under [BSD-2](https://opensource.org/licenses/BSD-2-Clause) l
 
 ## Links
 
-* (PyPI page of) `dvg` https://pypi.org/project/dvg/
+* PyPI page https://pypi.org/project/dvg/
 
 * D. Mekala et al., "SCDV: Sparse Composite Document Vectors using soft clustering over distributional representations," https://arxiv.org/abs/1612.06778
 

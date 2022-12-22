@@ -1,6 +1,6 @@
 [![Tests](https://github.com/tos-kamiya/dvg/actions/workflows/tests.yaml/badge.svg)](https://github.com/tos-kamiya/dvg/actions/workflows/tests.yaml) [![CodeQL](https://github.com/tos-kamiya/dvg/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tos-kamiya/dvg/actions/workflows/codeql-analysis.yml)
 
-⚠️ 注意: バージョン 1.0.0b9では、モデルファイルが刷新され、語彙数と（ベクトルの）次元が大きなものとなりました。`dvg`を実行するとデータファイルをダウンロードするために配布サイト（https://toshihirokamiya.com）に接続することに気づくかもしれません。  
+⚠️ 注意: バージョン 1.0.0b9では、モデルファイルが刷新され、語彙数と（ベクトルの）次元が大きなものとなりました。`dvg`を実行するとデータファイルをダウンロードするために配布サイト(https://toshihirokamiya.com)に接続することに気づくかもしれません。  
 
 ⚠️ 注意: バージョン 1.0.0b7 はひどいエンバグをしていたので、インストールしてしまった場合には、すぐに 1.0.0b8 にアップデートしてください。  
 
@@ -100,14 +100,22 @@ Verboseオプションです。指定すると、検索の進行中に、その�
 
 &rarr; [dvgを実行中に「UnicodeEncodeError: 'cp932' codec can't encode character ...」とっいたエラーメッセージが出る。](docs/troubleshooting.ja_JP.md#cp932)
 
+## Todo
+
+- [ ] READMEの実行例を新しいモデルによるものに差し替える。
+- [ ] Windows上でのワイルドカードの展開を`win_wildcard`のものに差し替える。
+
 ## 謝辞
 
 膨大な言語コーパスを提供されているWikipediaに感謝いたします:  
 https://dumps.wikimedia.org/
 
-SCDV(Sparse Composite Document Vectors)についてはD. Mekalaらのこちらの論文を参照してください:  
-https://arxiv.org/abs/1612.06778
-
 ## ライセンス
 
 dvgは [BSD-2](https://opensource.org/licenses/BSD-2-Clause) ライセンスで配布されます。
+
+## リンク
+
+* PyPIページ https://pypi.org/project/dvg/
+
+* D. Mekala et al., "SCDV: Sparse Composite Document Vectors using soft clustering over distributional representations," https://arxiv.org/abs/1612.06778
