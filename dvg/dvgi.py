@@ -152,21 +152,24 @@ def df_mt_iter(index_file_name: str) -> Iterator[Tuple[str, int]]:
                 last_df_mt = df_mt
 
 
-def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: CLArgs) -> Tuple[List[Tuple[str, int, Tuple[int, int], List[Tuple[int, float]]]], int]:
+def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: CLArgs) -> Tuple[List[Tuple[str, int, Tuple[int, int], List[Tuple[int, float]]]], int, List[str]]:
     r = []
     dfc = 0
+    dfs_wo_paraghraph = []
     for df in dfs:
         dfc += 1
         try:
             df_mtime = floor(os.path.getmtime(df))
         except FileNotFoundError:
+            print(ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr, flush=True)
             assert False, "Removed while running dvgi?: %s" % df
         # read lines from document file
         try:
             lines = scanner.scan(df)
         except ScanError as e:
-            print("> Warning: %s" % e, file=sys.stderr, flush=True)
+            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> Warning: %s" % e, file=sys.stderr, flush=True)
             continue  # for df
+        any_paragraph_exracted = False
         for pos in sliding_window_iter(len(lines), a.window):
             pos_b, pos_e = pos
             para = lines[pos_b:pos_e]
@@ -174,7 +177,10 @@ def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: 
             cn = remove_clusters_low_norm(cn, 0.1)
             if cn:
                 r.append((df, df_mtime, pos, cn))
-    return r, dfc
+                any_paragraph_exracted = True
+        if not any_paragraph_exracted:
+            dfs_wo_paraghraph.append(df)
+    return r, dfc, dfs_wo_paraghraph
 
 
 def calc_df_clusters_i(a):
@@ -201,6 +207,7 @@ def df_para_iter(index_file_name: str, fnmatcher: FilenameMatcher, query_c_to_n:
                     try:
                         file_mt = floor(os.path.getmtime(df))
                     except FileNotFoundError:
+                        print(ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr, flush=True)
                         assert False, "Removed while running dvgi?: %s" % df
                 else:
                     file_mt = None
@@ -291,6 +298,7 @@ def main():
     s = do_find_model_spec(a.model)
     tokenizer, model_file = s.tokenizer_name, s.file_path
     index_file_name = os.path.join(".dvg", "%s.w%d.clu" % (os.path.basename(model_file), a.window))
+    document_files_wo_paragraph = os.path.join(".dvg", "%s.w%d.dnp" % (os.path.basename(model_file), a.window))
 
     model = SCDVModel(tokenizer, model_file)
     scanner = Scanner()
@@ -311,35 +319,43 @@ def main():
         d = os.path.dirname(index_file_name)
         if not os.path.exists(d):
             os.mkdir(d)
-        with open(index_file_name, "w") as outp:
-            shms = model_shared(model)  # load the model into shared memory for process parallel
+        with open(document_files_wo_paragraph, "w") as outp_dnp:
+            with open(index_file_name, "w") as outp:
+                shms = model_shared(model)  # load the model into shared memory for process parallel
 
-            if a.verbose:
-                print("", end="", file=sys.stderr, flush=True)
-            count_document_files = 0
-            t0 = time.time()
+                if a.verbose:
+                    print("", end="", file=sys.stderr, flush=True)
+                count_document_files = 0
+                count_document_files_wo_paragraph = 0
+                t0 = time.time()
 
-            try:
-                args_it = ((dfs, model, scanner, a) for dfs in para_chunked_iter(expand_file_iter(a.file, windows_style=not a.unix_wildcard), chunk_size, a.workers))
-                with Pool(processes=a.workers) as pool:
-                    for r, dfc in pool.imap_unordered(calc_df_clusters_i, args_it):
-                        for df, df_mtime, pos, cn in r:
-                            pos_b, pos_e = pos
-                            print("%s\t%d\t%d-%d\t%s" % (df, df_mtime, pos_b, pos_e, ",".join("%d" % ci for ci, n in cn)), file=outp)
-                        count_document_files += dfc
-                        if a.verbose:
-                            t = time.time() - t0
-                            print("%s[%d docs done in %.0fs, %.2f docs/s]" % (ANSI_ESCAPE_CLEAR_CUR_LINE, count_document_files, t, count_document_files / t), end="", file=sys.stderr, flush=True)
-            except Exception as e:
-                if a.verbose:
-                    print(ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr, flush=True)
-                raise e
-            else:
-                if a.verbose:
-                    print(ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr, flush=True)
-            finally:
-                if shms is not None:
-                    model_shared_close(shms)
+                try:
+                    args_it = ((dfs, model, scanner, a) for dfs in para_chunked_iter(expand_file_iter(a.file, windows_style=not a.unix_wildcard), chunk_size, a.workers))
+                    with Pool(processes=a.workers) as pool:
+                        for r, dfc, dfs_wo_p in pool.imap_unordered(calc_df_clusters_i, args_it):
+                            for df, df_mtime, pos, cn in r:
+                                pos_b, pos_e = pos
+                                print("%s\t%d\t%d-%d\t%s" % (df, df_mtime, pos_b, pos_e, ",".join("%d" % ci for ci, n in cn)), file=outp)
+                            count_document_files_wo_paragraph += len(dfs_wo_p)
+                            for f in dfs_wo_p:
+                                print(f, file=outp_dnp)
+                            count_document_files += dfc
+                            if a.verbose:
+                                t = time.time() - t0
+                                print("%s[%d docs done in %.0fs, %.2f docs/s]" % (ANSI_ESCAPE_CLEAR_CUR_LINE, count_document_files, t, count_document_files / t), end="", file=sys.stderr, flush=True)
+                except Exception as e:
+                    if a.verbose:
+                        print(ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr, flush=True)
+                    raise e
+                else:
+                    if a.verbose:
+                        print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
+                    if count_document_files_wo_paragraph > 0:
+                        print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> number of document files without a valid paragraph: %d" % count_document_files_wo_paragraph, file=sys.stderr)
+                        print("> ... the file names were saved in: %s" % document_files_wo_paragraph, file=sys.stderr, flush=True)
+                finally:
+                    if shms is not None:
+                        model_shared_close(shms)
     elif a.ls:
         if not os.path.exists(index_file_name):
             sys.exit("Error: index db file not found: %s" % index_file_name)
