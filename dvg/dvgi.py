@@ -15,7 +15,7 @@ from docopt import docopt
 from init_attrs_with_kwargs import InitAttrsWKwArgs
 from numpy.linalg import norm
 
-from .iter_funcs import chunked_iter, sliding_window_iter
+from .iter_funcs import para_chunked_iter, sliding_window_iter
 from .models import SCDVModel, do_find_model_spec
 from .scanners import Scanner, ScanError
 from .scdv_embedding import sparse
@@ -50,15 +50,16 @@ class CLArgs(InitAttrsWKwArgs):
     workers: Optional[int]
     help: bool
     version: bool
+    unix_wildcard: bool
     over_pruning: float
 
 
 __doc__: str = """Dvg with index DB.
 
 Usage:
-  dvgi --build [-w WINDOW] [-j WORKERS] -m MODEL <file>...
-  dvgi [--search] [options] [-H] [-w WINDOW] [-j WORKERS] [-P RATIO] -m MODEL <query> <file>...
-  dvgi [--search] [options] [-H] [-w WINDOW] [-j WORKERS] [-P RATIO] -m MODEL -f QUERYFILE <file>...
+  dvgi --build [-w WINDOW] [-j WORKERS] [-v] -m MODEL <file>...
+  dvgi [--search] [options] [-H] [-w WINDOW] [-j WORKERS] [-P RATIO] [-v] -m MODEL <query> <file>...
+  dvgi [--search] [options] [-H] [-w WINDOW] [-j WORKERS] [-P RATIO] [-v] -m MODEL -f QUERYFILE <file>...
   dvgi --ls [-H] [-w WINDOW] [-j WORKERS] -m MODEL <file>...
   dvgi --help
   dvgi --version
@@ -79,6 +80,7 @@ Options:
   --excerpt-length=CHARS, -t CHARS      Length of the text to be excerpted [default: {dec}].
   --header, -H                  Print the header line.
   --workers=WORKERS -j WORKERS  Worker process [default: 1].
+  --unix-wildcard, -u           Use Unix-style pattern expansion on Windows.
   --over-pruning=RATIO, -P RATIO        Excessive early pruning. Large values will result in **inaccurate** search results [default: {dop}].
 """.format(
     dtn=DEFAULT_TOP_N,
@@ -150,9 +152,11 @@ def df_mt_iter(index_file_name: str) -> Iterator[Tuple[str, int]]:
                 last_df_mt = df_mt
 
 
-def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: CLArgs) -> List[Tuple[str, int, Tuple[int, int], List[Tuple[int, float]]]]:
+def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: CLArgs) -> Tuple[List[Tuple[str, int, Tuple[int, int], List[Tuple[int, float]]]], int]:
     r = []
+    dfc = 0
     for df in dfs:
+        dfc += 1
         try:
             df_mtime = floor(os.path.getmtime(df))
         except FileNotFoundError:
@@ -170,7 +174,7 @@ def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: 
             cn = remove_clusters_low_norm(cn, 0.1)
             if cn:
                 r.append((df, df_mtime, pos, cn))
-    return r
+    return r, dfc
 
 
 def calc_df_clusters_i(a):
@@ -309,13 +313,30 @@ def main():
             os.mkdir(d)
         with open(index_file_name, "w") as outp:
             shms = model_shared(model)  # load the model into shared memory for process parallel
+
+            if a.verbose:
+                print("", end="", file=sys.stderr, flush=True)
+            count_document_files = 0
+            t0 = time.time()
+
             try:
-                args_it = ((dfs, model, scanner, a) for dfs in chunked_iter(expand_file_iter(a.file), chunk_size))
+                args_it = ((dfs, model, scanner, a) for dfs in para_chunked_iter(expand_file_iter(a.file, windows_style=not a.unix_wildcard), chunk_size, a.workers))
                 with Pool(processes=a.workers) as pool:
-                    for r in pool.imap_unordered(calc_df_clusters_i, args_it):
+                    for r, dfc in pool.imap_unordered(calc_df_clusters_i, args_it):
                         for df, df_mtime, pos, cn in r:
                             pos_b, pos_e = pos
                             print("%s\t%d\t%d-%d\t%s" % (df, df_mtime, pos_b, pos_e, ",".join("%d" % ci for ci, n in cn)), file=outp)
+                        count_document_files += dfc
+                        if a.verbose:
+                            t = time.time() - t0
+                            print("%s[%d docs done in %.0fs, %.2f docs/s]" % (ANSI_ESCAPE_CLEAR_CUR_LINE, count_document_files, t, count_document_files / t), end="", file=sys.stderr, flush=True)
+            except Exception as e:
+                if a.verbose:
+                    print(ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr, flush=True)
+                raise e
+            else:
+                if a.verbose:
+                    print(ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr, flush=True)
             finally:
                 if shms is not None:
                     model_shared_close(shms)
@@ -363,8 +384,8 @@ def main():
                 print("", end="", file=sys.stderr, flush=True)
             search_results: List[SLPPD] = []
             count_document_files = 0
+            t0 = time.time()
             try:
-                t0 = time.time()
                 args_it = ((df_mt_poss, model, scanner, a, dfc) for df_mt_poss, dfc in df_para_iter(index_file_name, fnmatcher, query_c_to_n, chunk_size, a.over_pruning))
                 with Pool(processes=a.workers) as pool:
                     for sppds, dfc in pool.imap_unordered(calc_para_similarity_i, args_it):

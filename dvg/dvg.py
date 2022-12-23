@@ -14,8 +14,10 @@ import unicodedata
 from docopt import docopt
 from init_attrs_with_kwargs import InitAttrsWKwArgs
 import numpy as np
+from win_wildcard import expand_windows_wildcard, get_windows_shell
 
-from .iter_funcs import chunked_iter, sliding_window_iter
+
+from .iter_funcs import chunked_iter, para_chunked_iter, sliding_window_iter
 from .models import SCDVModel, do_find_model_spec, load_tokenize_func
 from .scanners import Scanner, ScanError
 from .search_result import ANSI_ESCAPE_CLEAR_CUR_LINE, SLPPD, excerpt_text, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
@@ -73,6 +75,7 @@ class CLArgs(InitAttrsWKwArgs):
     help: bool
     version: bool
     diagnostic: bool
+    unix_wildcard: bool
     over_pruning: float
 
 
@@ -97,8 +100,9 @@ Options:
   --min-length=CHARS, -l CHARS  Paragraphs shorter than this get a penalty [default: {dplt}].
   --excerpt-length=CHARS, -t CHARS      Length of the text to be excerpted [default: {dec}].
   --header, -H                  Print the header line.
-  --workers=WORKERS -j WORKERS  Worker process.
+  --workers=WORKERS, -j WORKERS         Worker process.
   --diagnostic                  Check model installatin.
+  --unix-wildcard, -u           Use Unix-style pattern expansion on Windows.
   --over-pruning=RATIO, -P RATIO        No effect (only for compatibility to dvgi).
 """.format(
     dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dec=DEFAULT_EXCERPT_CHARS
@@ -124,18 +128,29 @@ def do_extract_query_lines(query: Optional[str], query_file: Optional[str]) -> L
     return lines
 
 
-def expand_file_iter(target_files: Iterable[str]) -> Iterator[str]:
-    for f in target_files:
-        if f == "-":
-            for L in sys.stdin:
-                L = L.rstrip()
-                yield L
-        elif "*" in f:
-            for gf in iglob(f, recursive=True):
-                if os.path.isfile(gf):
-                    yield gf
-        else:
-            yield f
+def expand_file_iter(target_files: Iterable[str], windows_style: bool = False) -> Iterator[str]:
+    if windows_style and get_windows_shell() is not None:
+        for f in target_files:
+            if f == "-":
+                for L in sys.stdin:
+                    L = L.rstrip()
+                    yield L
+            else:
+                for gf in expand_windows_wildcard(f):
+                    if os.path.isfile(gf):
+                        yield gf
+    else:
+        for f in target_files:
+            if f == "-":
+                for L in sys.stdin:
+                    L = L.rstrip()
+                    yield L
+            elif "*" in f:
+                for gf in iglob(f, recursive=True):
+                    if os.path.isfile(gf):
+                        yield gf
+            else:
+                yield f
 
 
 def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArgs) -> List[SLPPD]:
@@ -209,6 +224,13 @@ def main():
         if a == "--model-dir":
             print(os.path.join(_script_dir, "models"))
             return
+        if a == "--expand-wildcard":
+            file_pats = argv[i+1:]
+            for fp in file_pats:
+                print("%s:" % fp)
+                for f in expand_file_iter([fp], windows_style=True):
+                    print("    %s" % f)
+            return
 
     # A charm to make ANSI escape sequences work on Windows
     if platform.system() == "Windows":
@@ -217,7 +239,6 @@ def main():
         colorama.init()
 
     # command-line analysis
-    argv = sys.argv[1:]
     raw_args = docopt(__doc__, argv=argv, version="dvg %s" % VERSION)
     a = CLArgs(_cast_str_values=True, **raw_args)
 
@@ -248,7 +269,7 @@ def main():
         try:
             if a.workers and a.workers >= 2:
                 shms = model_shared(model)  # load the model into shared memory for process parallel
-                args_it = ((dfs, model, a) for dfs in chunked_iter(expand_file_iter(a.file), chunk_size))
+                args_it = ((dfs, model, a) for dfs in para_chunked_iter(expand_file_iter(a.file, windows_style=not a.unix_wildcard), chunk_size, a.workers))
                 with Pool(processes=a.workers) as pool:
                     for srs, dfs in pool.imap_unordered(find_similar_paragraphs_i, args_it):
                         search_results.extend(srs)
