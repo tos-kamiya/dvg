@@ -24,6 +24,12 @@ python3 -m pip install --user dvg[docopt-ng]
 
 If you want to search PDF files, install `pdftotext` according to the instructions at https://github.com/jalan/pdftotext.
 
+In addition, install the Python pdftotext package as follows:
+
+```sh
+python3 -m pip install --user pdftotext
+```
+
 (3) Download data files **(option)**
 
 Tool `dvg` needs data files of word tokenization and SCDV model.
@@ -33,7 +39,7 @@ These files are downloaded dynamically when needed at runtime, but can also be d
 dvg -m en --diagnostic
 ```
 
-(4) Japanese Model **(option)** 
+(4) Japanese Model **(option)**
 
 If you want to use the Japanese model, please install it with `[ja]` as follows:
 
