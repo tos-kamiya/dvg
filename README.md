@@ -3,9 +3,9 @@
 &rarr; doc [main](https://github.com/tos-kamiya/dvg/) | [dev](https://github.com/tos-kamiya/dvg/tree/dev)  
 &rarr; Japanese doc [main](https://github.com/tos-kamiya/dvg/blob/main/README.ja_JP.md) | [dev](https://github.com/tos-kamiya/dvg/blob/dev/README.ja_JP.md)  
 
-⚠️ Warning: In version 1.0.0b9, the model files have been revamped and now have a larger vocabulary and (vector) dimension. You may notice that `dvg` connects to the distribution site (https://toshihirokamiya.com) to download the data file when you run the tool.  
+⚠️ Warning: `dvg` is **not complatible with CPython 3.11**, because of some dependencyies are not compatible with it.  
 
-⚠️ Warning: Version 1.0.0b7 was badly enbuged, so if you have installed it, please update to 1.0.0b8 immediately!  
+⚠️ Warning: In version 1.0.0b9, the model files have been revamped and now have a larger vocabulary and (vector) dimension. You may notice that **`dvg` downloads data files from a web site (https://toshihirokamiya.com)** while running it.  
 
 # dvg
 

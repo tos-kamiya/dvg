@@ -1,8 +1,8 @@
 [![Tests](https://github.com/tos-kamiya/dvg/actions/workflows/tests.yaml/badge.svg)](https://github.com/tos-kamiya/dvg/actions/workflows/tests.yaml) [![CodeQL](https://github.com/tos-kamiya/dvg/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tos-kamiya/dvg/actions/workflows/codeql-analysis.yml)
 
-⚠️ 注意: バージョン 1.0.0b9では、モデルファイルが刷新され、語彙数と（ベクトルの）次元が大きなものとなりました。`dvg`を実行するとデータファイルをダウンロードするために配布サイト(https://toshihirokamiya.com)に接続することに気づくかもしれません。  
+⚠️ 注意: `dvg` は**CPython 3.11と互換性**がありません。一部の依存がCPython 3.11と互換性がないためです。  
 
-⚠️ 注意: バージョン 1.0.0b7 はひどいエンバグをしていたので、インストールしてしまった場合には、すぐに 1.0.0b8 にアップデートしてください。  
+⚠️ 注意: バージョン 1.0.0b9では、モデルファイルが刷新され、語彙数と（ベクトルの）次元が大きなものとなりました。**`dvg`が実行中にwebサイト (https://toshihirokamiya.com) からデータファイルをダウンロードする** のに気づくかもしれません。  
 
 # dvg
 
