@@ -1,6 +1,6 @@
-## Indexing (experimental)
+## Indexing
 
-**This feature is experimental and the search results may be worse than the normal search (especially for document files with small similarity values).**
+**Indexing is not guaranteed to always improve search speed. Please check on a case-by-case basis.**
 
 If you are repeatedly searching for the same document file, consider indexing the document files.
 
@@ -23,5 +23,5 @@ This command will create a subdirectory `.dvg` in the current directory, where t
 dvgi -v -m en <query_phrase> <document_files>...
 ```
 
-Example of search using index DB:  
+Example of building index DB and search with it:  
 ![](images/run9.png)

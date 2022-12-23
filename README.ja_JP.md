@@ -1,8 +1,8 @@
 [![Tests](https://github.com/tos-kamiya/dvg/actions/workflows/tests.yaml/badge.svg)](https://github.com/tos-kamiya/dvg/actions/workflows/tests.yaml) [![CodeQL](https://github.com/tos-kamiya/dvg/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tos-kamiya/dvg/actions/workflows/codeql-analysis.yml)
 
-⚠️ 注意: `dvg` は**CPython 3.11と互換性**がありません。一部の依存がCPython 3.11と互換性がないためです。  
+⚠️ 注意: `dvg` は**CPython 3.11とは非互換**です。一部の依存がCPython 3.11と非互換のためです。  
 
-⚠️ 注意: バージョン 1.0.0b9では、モデルファイルが刷新され、語彙数と（ベクトルの）次元が大きなものとなりました。**`dvg`が実行中にwebサイト (https://toshihirokamiya.com) からデータファイルをダウンロードする** のに気づくかもしれません。  
+⚠️ 注意: バージョン 1.0.0b9では、モデルファイルが刷新され、語彙数と（ベクトルの）次元が大きなものとなりました。容量の制限のためモデルファイルはPyPIに登録されているパッケージには含まれません。 **`dvg`の初回実行時にウェブサイト (https://toshihirokamiya.com/) からダウンロード** されます。  
 
 # dvg
 
@@ -84,7 +84,7 @@ Verboseオプションです。指定すると、検索の進行中に、その�
 辞書データ[ejdict-hand](https://github.com/kujirahand/EJDict)から検索した例:  
 ![](docs/images/run8-ja.png)
 
-## インデックス化 (実験中)
+## インデックス化
 
 &rarr; [インデックス化](docs/indexing.ja_JP.md)  
 
@@ -103,7 +103,7 @@ Verboseオプションです。指定すると、検索の進行中に、その�
 ## Todo
 
 - [x] READMEの実行例を新しいモデルによるものに差し替える。
-- [ ] Windows上でのワイルドカードの展開を`win_wildcard`のものに差し替える。
+- [x] Windows上でのワイルドカードの展開を`win_wildcard`のものに差し替える。
 
 ## 謝辞
 
