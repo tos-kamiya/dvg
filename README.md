@@ -103,7 +103,7 @@ Example of searching from dictionary data [Webster's Unabridged English Dictiona
 
 ## Todo
 
-- [ ] Replace the example figure in the README with one with the new model.
+- [x] Replace the examples figure in the README with ones with the new model.
 - [ ] Replace wildcard expansion in Windows with one using `win_wildcard`.
 
 ## Acknowledgements
