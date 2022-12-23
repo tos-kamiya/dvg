@@ -27,7 +27,7 @@ from .dvg import DEFAULT_TOP_N, DEFAULT_WINDOW_SIZE, DEFAULT_EXCERPT_CHARS, DEFA
 
 
 VERSION = importlib.metadata.version("dvg")
-DEFAULT_OVER_PRUNING = 0.5
+DEFAULT_OVER_PRUNING = 0.3
 
 
 class CLArgs(InitAttrsWKwArgs):
@@ -66,7 +66,7 @@ Usage:
 
 Options:
   --build                       (Re-) build index DB.
-  --search                      Search (default). 
+  --search                      Search (default).
   --ls                          Lookup consistency between index data and existing files.
   --verbose, -v                 Verbose.
   --model=MODEL, -m MODEL       Model name.
