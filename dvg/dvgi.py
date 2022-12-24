@@ -27,7 +27,7 @@ from .dvg import DEFAULT_TOP_N, DEFAULT_WINDOW_SIZE, DEFAULT_EXCERPT_CHARS, DEFA
 
 
 VERSION = importlib.metadata.version("dvg")
-DEFAULT_OVER_PRUNING = 0.3
+DEFAULT_OVER_PRUNING = 0.5
 
 
 class CLArgs(InitAttrsWKwArgs):
@@ -131,12 +131,31 @@ def calc_clusters(lines: List[str], model: SCDVModel) -> List[Tuple[int, float]]
     return cluster_norms
 
 
-def remove_clusters_low_norm(cluster_norms: List[Tuple[int, float]], threshold: float) -> List[Tuple[int, float]]:
-    cluster_norms = cluster_norms[:]
-    while cluster_norms and cluster_norms[-1][1] < threshold:
-        cluster_norms.pop()
+def clip_clusters_by_norm(cluster_norms: List[Tuple[int, float]]) -> List[Tuple[int, float]]:
+    if not cluster_norms:
+        return []
 
-    return cluster_norms
+    ns = sorted((n for ci, n in cluster_norms), reverse=True)
+    if ns[0] < 0.01:
+        return ''
+
+    threshold1 = ns[:5][-1]
+    threshold2 = ns[0] / 10
+    t = max(threshold1, threshold2)
+    return [ci_n for ci_n in cluster_norms if ci_n[1] >= t]
+
+
+def encode_clusters_approx(cluster_norms: List[Tuple[int, float]]):
+    if not cluster_norms:
+        return ''
+    max_n = max(n for ci, n in cluster_norms)
+    if max_n < 0.01:
+        return ''
+    return ",".join("%d*%d" % (ci, min(9, int(n / max_n * 10))) for ci, n in cluster_norms)
+
+
+def decode_clusters_approx(cluster_norms_str: str):
+    return [(int(s[:-2]), float("0.%s9" % s[-1])) for s in cluster_norms_str.split(",")]
 
 
 def df_mt_iter(index_file_name: str) -> Iterator[Tuple[str, int]]:
@@ -174,7 +193,7 @@ def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: 
             pos_b, pos_e = pos
             para = lines[pos_b:pos_e]
             cn = calc_clusters(para, model)
-            cn = remove_clusters_low_norm(cn, 0.1)
+            cn = clip_clusters_by_norm(cn)
             if cn:
                 r.append((df, df_mtime, pos, cn))
                 any_paragraph_exracted = True
@@ -194,7 +213,7 @@ def df_para_iter(index_file_name: str, fnmatcher: FilenameMatcher, query_c_to_n:
         df = file_mt = None
         for L in inp:
             fields = L.rstrip().split("\t")
-            d, m, lrstr, cns = fields
+            d, m, lrstr, cnstr = fields
 
             if d != df:
                 df_count += 1
@@ -216,12 +235,9 @@ def df_para_iter(index_file_name: str, fnmatcher: FilenameMatcher, query_c_to_n:
             if file_mt is None or abs(mt - file_mt) >= 3:
                 continue  # for L
 
-            expected_norm_contribution = 0.0
-            for c in cns.split(","):
-                expected_norm_contribution += query_c_to_n[int(c)]
-                if expected_norm_contribution >= pruning_by_cluster:
-                    break  # for c
-            else:
+            cn = decode_clusters_approx(cnstr)
+            expected_norm_contribution = sum(query_c_to_n[ci] * n for ci, n in cn)
+            if expected_norm_contribution < pruning_by_cluster:
                 continue  # for L
 
             b, e = lrstr.split("-")
@@ -297,8 +313,8 @@ def main():
 
     s = do_find_model_spec(a.model)
     tokenizer, model_file = s.tokenizer_name, s.file_path
-    index_file_name = os.path.join(".dvg", "%s.w%d.clu" % (os.path.basename(model_file), a.window))
-    document_files_wo_paragraph = os.path.join(".dvg", "%s.w%d.dnp" % (os.path.basename(model_file), a.window))
+    index_file_name = os.path.join(".dvg", "%s.w%d.cclu" % (os.path.basename(model_file), a.window))
+    document_files_wo_paragraph = os.path.join(".dvg", "%s.w%d.dwop" % (os.path.basename(model_file), a.window))
 
     model = SCDVModel(tokenizer, model_file)
     scanner = Scanner()
@@ -335,7 +351,7 @@ def main():
                         for r, dfc, dfs_wo_p in pool.imap_unordered(calc_df_clusters_i, args_it):
                             for df, df_mtime, pos, cn in r:
                                 pos_b, pos_e = pos
-                                print("%s\t%d\t%d-%d\t%s" % (df, df_mtime, pos_b, pos_e, ",".join("%d" % ci for ci, n in cn)), file=outp)
+                                print("%s\t%d\t%d-%d\t%s" % (df, df_mtime, pos_b, pos_e, encode_clusters_approx(cn)), file=outp)
                             count_document_files_wo_paragraph += len(dfs_wo_p)
                             for f in dfs_wo_p:
                                 print(f, file=outp_dnp)
