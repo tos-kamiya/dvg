@@ -77,14 +77,9 @@ Verboseオプションです。指定すると、検索の進行中に、その�
 `--worker=NUM, -j NUM`  
 ワーカープロセスの数。並列実行のためのオプションです。
 
-## テキストファイルの各行を検索する
+## ヒント
 
-オプション`--paragraph`と`--window=1`を同時に指定すると、テキストファイルの各行を対象とした検索を行うことができます。
-
-辞書データ[ejdict-hand](https://github.com/kujirahand/EJDict)から検索した例:  
-![](docs/images/run8-ja.png)
-
-## インデックス化
+&rarr; [テキストファイルの各行を検索する](docs/search-individual-lines.ja_JP.md)  
 
 &rarr; [インデックス化](docs/indexing.ja_JP.md)  
 
@@ -99,11 +94,6 @@ Verboseオプションです。指定すると、検索の進行中に、その�
 &rarr; [dvgを実行中に 「None of PyTorch, TensorFlow >= 2.0, or Flax have been found. ...」という警告メッセージが表示される。](docs/troubleshooting.ja_JP.md#no-fugashi)
 
 &rarr; [dvgを実行中に「UnicodeEncodeError: 'cp932' codec can't encode character ...」とっいたエラーメッセージが出る。](docs/troubleshooting.ja_JP.md#cp932)
-
-## Todo
-
-- [x] READMEの実行例を新しいモデルによるものに差し替える。
-- [x] Windows上でのワイルドカードの展開を`win_wildcard`のものに差し替える。
 
 ## 謝辞
 
