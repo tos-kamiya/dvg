@@ -70,9 +70,9 @@ Then, add a directory where `pdftotext.exe` is located to your PATH. For example
 
 Make sure you can run pdftotext from (such as) a command prompt.
 
-(4) Download data files **(option)**
+(4) Download model files **(option)**
 
-Tool `dvg` needs data files of word tokenization and SCDV model.
+Tool `dvg` needs model files of word tokenization and SCDV model.
 These files are downloaded dynamically when needed at runtime, but can also be downloaded in advance.
 
 ```sh
@@ -93,7 +93,7 @@ However, if you run dvg without PyTorch, Tensorflow, or Flax installed, you will
 pip install torch
 ```
 
-To download the data file for Japanese in advance, run the following command line:
+To download the model file for Japanese in advance, run the following command line:
 
 ```sh
 dvg -m ja --diagnostic
