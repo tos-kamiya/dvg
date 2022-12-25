@@ -26,8 +26,8 @@ Then run the following commands:
 python3 -m pip install --user pdftotext
 python3 -m pip install --user torch
 python3 -m pip install --user dvg[docopt-ng,ja]
-dvg -m en --diagnostic
-dvg -m ja --diagnostic
+python3 -m dvg dvg -m en --diagnostic
+python3 -m dvg dvg -m ja --diagnostic
 ```
 
 ### Step-by-step install
@@ -88,7 +88,7 @@ Tool `dvg` needs model files of word tokenization and SCDV model.
 These files are downloaded dynamically when needed at runtime, but can also be downloaded in advance.
 
 ```sh
-dvg -m en --diagnostic
+python3 -m dvg dvg -m en --diagnostic
 ```
 
 (5) Japanese Model **(option)**
@@ -108,6 +108,6 @@ python3 -m pip install --user torch
 To download the model file for Japanese in advance, run the following command line:
 
 ```sh
-dvg -m ja --diagnostic
+python3 -m dvg dvg -m ja --diagnostic
 ```
 

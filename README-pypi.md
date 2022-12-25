@@ -2,7 +2,7 @@
 
 dvg, a document-vector grep. 
 
-`dvg` is an off-the-shelf grep tool that performs semantic similarity search.
+The `dvg` is an off-the-shelf grep-like tool that performs semantic similarity search.
 With SCDV models, search document files that contain similar parts to query.
 Supports searching within text files (.txt), PDF files (.pdf), and MS Word files (.docx).
 

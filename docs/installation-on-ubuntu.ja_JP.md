@@ -26,8 +26,8 @@ brew install pkg-config poppler python
 python3 -m pip install --user pdftotext
 python3 -m pip install --user torch
 python3 -m pip install --user dvg[docopt-ng,ja]
-dvg -m en --diagnostic
-dvg -m ja --diagnostic
+python3 -m dvg dvg -m en --diagnostic
+python3 -m dvg dvg -m ja --diagnostic
 ```
 
 ### ステップバイステップのインストール
@@ -92,6 +92,6 @@ brew install pkg-config poppler python
 ツール `dvg` は単語トークン化および SCDV モデルのファイルを必要とします。これらのファイルは必要に応じて実行時に動的にダウンロードされますが、事前にダウンロードしておくことも可能です。
 
 ```sh
-dvg -m en --diagnostic
-dvg -m ja --diagnostic
+python3 -m dvg dvg -m en --diagnostic
+python3 -m dvg dvg -m ja --diagnostic
 ```
