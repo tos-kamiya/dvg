@@ -1,8 +1,31 @@
 ## Windowsでのインストール
 
-下記の手順は Windows 10 (+ [Python公式webサイト](https://www.python.org) で配布しているPython)で確認したものです。
-
 Pythonのバージョン`3.8`から`3.10`までに対応しています。
+
+### フルインストール
+
+(1) [https://www.python.org/downloads/](https://www.python.org/downloads/) から Python の **3.10.x またはそれ以前** をインストール。
+
+* 他のバージョンのPythonがインストールされている場合は（おそらく）アンインストールする必要があります。
+* インストーラのダイアログで、**"Add Python 3.10 to PATH"というチェックボックスにチェック** を入れておいてください。
+
+(2) Chocolatey [https://chocolatey.org/](https://chocolatey.org/) をインストール。
+
+(3) コマンドプロンプトで次を実行。
+
+```
+choco install poppler
+pip install wheel
+pip install torch
+pip install pdftotext
+pip install dvg[docopt-ng,ja]
+dvg -m en --diagnostic
+dvg -m ja --diagnostic
+```
+
+(4) 次の「ステップバイステップのインストール」の「(2) NKFをインストール **(推奨)**」にしたがってNKFをインストールしてください。
+
+### ステップバイステップのインストール
 
 (1) `dvg`をインストール
 

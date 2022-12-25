@@ -1,10 +1,36 @@
 ## Installation on Windows
 
-The following steps have been checked on Windows 10 (+ Python distributed on the [official Python website](https://www.python.org)).
+The `dvg` is compatible with Python versions from `3.8` to `3.10`.
 
-`dvg` is compatible with Python versions from `3.8` to `3.10`.
+### Full install
 
-(1) Install `dvg`
+(1) Install Python **3.10.x or earlier** from [https://www.python.org/downloads/](https://www.python.org/downloads/).
+
+* If you have other versions of Python installed, you will probably need to uninstall them.
+* In the installer dialog, **check the "Add Python 3.10 to PATH" checkbox**.
+
+(2) Install Chocolatey [https://chocolatey.org/](https://chocolatey.org/).
+
+(3) Run following commands in command prompt.
+
+```
+choco install poppler
+pip install wheel
+pip install torch
+pip install pdftotext
+pip install dvg[docopt-ng,ja]
+dvg -m en --diagnostic
+dvg -m ja --diagnostic
+```
+
+### Step-by-step install
+
+(1) Install Python **3.10.x or earlier** from [https://www.python.org/downloads/](https://www.python.org/downloads/).
+
+* If you have other versions of Python installed, you will probably need to uninstall them.
+* In the installer dialog, check the "Add Python 3.10 to PATH" checkbox.
+
+(2) Install `dvg`
 
 To make `dvg` compatible with both `docopt` and `docopt-ng`, dependencies on them are now explicitly extra dependencies.
 
@@ -22,11 +48,11 @@ pip install wheel
 pip install dvg
 ```
 
-(2) Install pdftotext. **(option)**
+(3) Install pdftotext. **(option)**
 
-If you want to search PDF files, please install `poppler` according to either (2.1) or (2.2) below.
+If you want to search PDF files, please install `poppler` according to either (3.1) or (3.2) below.
 
-(2.1) Use [Chocolatey](https://chocolatey.org/)
+(3.1) Use [Chocolatey](https://chocolatey.org/)
 
 You can install Poppler as follows:
 
@@ -34,7 +60,7 @@ You can install Poppler as follows:
 choco install poppler
 ```
 
-(2.2) Install Poppler manually.
+(3.2) Install Poppler manually.
 
 Download and extract Poppler from the following page.
 
@@ -44,7 +70,7 @@ Then, add a directory where `pdftotext.exe` is located to your PATH. For example
 
 Make sure you can run pdftotext from (such as) a command prompt.
 
-(3) Download data files **(option)**
+(4) Download data files **(option)**
 
 Tool `dvg` needs data files of word tokenization and SCDV model.
 These files are downloaded dynamically when needed at runtime, but can also be downloaded in advance.
@@ -53,7 +79,7 @@ These files are downloaded dynamically when needed at runtime, but can also be d
 dvg -m en --diagnostic
 ```
 
-(4) Japanese Model **(option)** 
+(5) Japanese Model **(option)** 
 
 If you want to use the Japanese model, please install it with `[ja]` as follows:
 

@@ -1,10 +1,52 @@
 ## Ubuntu / macOSでのインストール
 
-下記の手順はUbuntu 20.04とmacOS Catalina (+ コマンドライン・デベロッパツールのPython)で確認したものです。
+`dvg`はPythonのバージョン`3.8`から`3.10`に対応しています。
 
-Pythonのバージョン`3.8`から`3.10`に対応しています。
+### フルインストール
 
-(1) `dvg`をインストール
+Ubuntuの場合は次をターミナルで実行します。
+
+```
+sudo apt -y install python3-pip
+sudo apt -y install build-essential libpoppler-cpp-dev pkg-config python3-dev
+```
+
+macOSの場合は次を実行します。
+
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+```
+brew install pkg-config poppler python
+```
+
+その後、ターミナルで次のコマンドを実行してください。
+
+```
+python3 -m pip install --user pdftotext
+python3 -m pip install --user torch
+python3 -m pip install --user dvg[docopt-ng,ja]
+dvg -m en --diagnostic
+dvg -m ja --diagnostic
+```
+
+### ステップバイステップのインストール
+
+(1) pipやbrewのインストール
+
+Ubuntuの場合は次を実行します。
+
+```
+sudo apt -y install python3-pip
+```
+
+macOSの場合は次を実行します。
+
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+(2) `dvg`をインストール
 
 `dvg`を`docopt`と`docopt-ng`の双方と互換性を持たせるため、それらへの依存はextra dependencyとして記述しました。
 
@@ -26,17 +68,26 @@ PyTorch、Tensorflow, Flaxのいずれもインストールしていない場合
 python3 -m pip install --user torch
 ```
 
-(2) pdftotextをインストール **（任意)**
+(3) pdftotextをインストール **（任意)**
 
 PDFファイルを検索対象としたい場合には、`pdftotext`を記述 https://github.com/jalan/pdftotext に従ってインストールしてください。
 
-さらに、Pythonのpdftotextパッケージを次のようにインストールしてください。
+具体的には、次のようにしてください。
+
+Ubuntuの場合
 
 ```sh
+sudo apt install build-essential libpoppler-cpp-dev pkg-config python3-dev
 python3 -m pip install --user pdftotext
 ```
 
-(3) データファイルのダウンロード **(任意)**
+macOSの場合
+
+```
+brew install pkg-config poppler python
+```
+
+(4) データファイルのダウンロード **(任意)**
 
 ツール `dvg` は単語トークン化および SCDV モデルのデータファイルを必要とします。これらのファイルは必要に応じて実行時に動的にダウンロードされますが、事前にダウンロードしておくことも可能です。
 

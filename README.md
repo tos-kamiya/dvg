@@ -3,13 +3,13 @@
 &rarr; doc [main](https://github.com/tos-kamiya/dvg/) | [dev](https://github.com/tos-kamiya/dvg/tree/dev)  
 &rarr; Japanese doc [main](https://github.com/tos-kamiya/dvg/blob/main/README.ja_JP.md) | [dev](https://github.com/tos-kamiya/dvg/blob/dev/README.ja_JP.md)  
 
-⚠️ Warning: `dvg` is **incomplatible with CPython 3.11**, because some of its dependencyies are so.  
+⚠️ Warning: `dvg` is **incomplatible with CPython 3.11**, because some of its dependencyies are so. Reference: Python 3.11 Readiness [https://pyreadiness.org/3.11/](https://pyreadiness.org/3.11/)  
 
 ⚠️ Warning: In version 1.0.0b9, the model files have been revamped and now have a larger vocabulary and (vector) dimension. Due to PyPI space limitations, model files are not included in the distribution package; they are **downloaded from a website (https://toshihirokamiya.com/) at the first time you run `dvg`**.  
 
 # dvg
 
-`dvg` is an off-the-shelf grep tool that performs semantic similarity search, for Windows, macOS, and Ubuntu.
+`dvg` is an off-the-shelf grep-like tool that performs semantic similarity search, for Windows, macOS, and Ubuntu.
 
 With SCDV models, search document files that contain similar parts to query.
 Supports searching within text files (.txt), PDF files (.pdf), and MS Word files (.docx).

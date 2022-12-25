@@ -1,10 +1,52 @@
 ## Installation on Ubuntu / macOS
 
-The following steps have been checked on Ubuntu 20.04 and macOS Catalina (+ Python of Command Line Developer Tools).
+The `dvg` is compatible with Python versions from `3.8` to `3.10`.
 
-`dvg` is compatible with Python versions from `3.8` to `3.10`.
+### Full install
 
-(1) Install `dvg`.
+Run the following (in case of Ubuntu):
+
+```
+sudo apt -y install python3-pip
+sudo apt -y install build-essential libpoppler-cpp-dev pkg-config python3-dev
+```
+
+or the following commands (in case of macOS):
+
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+```
+brew install pkg-config poppler python
+```
+
+Then run the following commands:
+
+```
+python3 -m pip install --user pdftotext
+python3 -m pip install --user torch
+python3 -m pip install --user dvg[docopt-ng,ja]
+dvg -m en --diagnostic
+dvg -m ja --diagnostic
+```
+
+### Step-by-step install
+
+(1) Install pip or brew.
+
+Run the following (in case of Ubuntu):
+
+```
+sudo apt -y install python3-pip
+```
+
+or the following commands (in case of macOS):
+
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+(2) Install the `dvg`.
 
 To make `dvg` compatible with both `docopt` and `docopt-ng`, dependencies on them are now explicitly extra dependencies.
 
@@ -20,17 +62,27 @@ If you are unsure `docopt` or `docopt-ng` is installed on your system, try the f
 python3 -m pip install --user dvg[docopt-ng]
 ```
 
-(2) Install pdftotext **(option)**
+(3) Install pdftotext **(option)**
 
 If you want to search PDF files, install `pdftotext` according to the instructions at https://github.com/jalan/pdftotext.
 
-In addition, install the Python pdftotext package as follows:
+Specifically, run the following:
+
+In case of Ubuntu:
 
 ```sh
+sudo apt install build-essential libpoppler-cpp-dev pkg-config python3-dev
 python3 -m pip install --user pdftotext
 ```
 
-(3) Download data files **(option)**
+In case of macOS:
+
+```
+brew install pkg-config poppler python
+python3 -m pip install --user pdftotext
+```
+
+(4) Download data files **(option)**
 
 Tool `dvg` needs data files of word tokenization and SCDV model.
 These files are downloaded dynamically when needed at runtime, but can also be downloaded in advance.
@@ -39,7 +91,7 @@ These files are downloaded dynamically when needed at runtime, but can also be d
 dvg -m en --diagnostic
 ```
 
-(4) Japanese Model **(option)**
+(5) Japanese Model **(option)**
 
 If you want to use the Japanese model, please install it with `[ja]` as follows:
 
