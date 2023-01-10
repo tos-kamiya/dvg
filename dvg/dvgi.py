@@ -17,7 +17,7 @@ from numpy.linalg import norm
 
 from .iter_funcs import para_chunked_iter, sliding_window_iter
 from .models import SCDVModel, do_find_model_spec
-from .scanners import Scanner, ScanError
+from .scanners import Scanner, ScanError, ScanErrorNotFile
 from .scdv_embedding import sparse
 from .search_result import ANSI_ESCAPE_CLEAR_CUR_LINE, SLPPD, excerpt_text, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
 from .text_funcs import includes_all_texts, includes_any_of_texts
@@ -185,6 +185,8 @@ def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: 
         # read lines from document file
         try:
             lines = scanner.scan(df)
+        except ScanErrorNotFile as e:
+            continue
         except ScanError as e:
             print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> Warning: %s" % e, file=sys.stderr, flush=True)
             continue  # for df

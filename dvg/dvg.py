@@ -19,7 +19,7 @@ from win_wildcard import expand_windows_wildcard, get_windows_shell
 
 from .iter_funcs import chunked_iter, para_chunked_iter, sliding_window_iter
 from .models import SCDVModel, do_find_model_spec, load_tokenize_func
-from .scanners import Scanner, ScanError
+from .scanners import Scanner, ScanError, ScanErrorNotFile
 from .search_result import ANSI_ESCAPE_CLEAR_CUR_LINE, SLPPD, excerpt_text, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
 from .text_funcs import includes_all_texts, includes_any_of_texts
 
@@ -162,8 +162,10 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArg
         # read lines from document file
         try:
             lines = scanner.scan(df)
+        except ScanErrorNotFile as e:
+            continue
         except ScanError as e:
-            print("> Warning: %s" % e, file=sys.stderr, flush=True)
+            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> Warning: %s" % e, file=sys.stderr, flush=True)
             continue
 
         # for each paragraph in the file, calculate the similarity to the query

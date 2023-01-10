@@ -39,6 +39,8 @@ else:
 class ScanError(Exception):
     pass
 
+class ScanErrorNotFile(ScanError):
+    pass
 
 class Scanner:
     def scan(self, file_name: str) -> List[str]:
@@ -61,6 +63,8 @@ class Scanner:
 
         i = file_name.rfind(".")
         if i < 0:
+            if os.path.isdir(file_name):
+                raise ScanErrorNotFile
             raise ScanError("ScanError: file has NO extension: %s" % repr(file_name))
 
         if not os.path.exists(file_name):
