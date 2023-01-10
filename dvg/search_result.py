@@ -1,5 +1,6 @@
 from typing import Callable, List, Tuple
 
+import re
 import sys
 
 from .iter_funcs import ranges_overwrapping
@@ -27,9 +28,14 @@ def prune_overlapped_paragraphs(slppds: List[SLPPD]) -> List[SLPPD]:
     return [ipsrls for i, ipsrls in enumerate(slppds) if i not in dropped_index_set]
 
 
+PAT_ZsPlus = re.compile('[\u00020\u00a0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000]+')
+
+
 def excerpt_text(lines: List[str], similarity_to_lines: Callable[[List[str]], float], length_to_excerpt: int) -> str:
     if not lines:
         return ""
+
+    lines = [re.sub(PAT_ZsPlus, ' ', L) for L in lines]
 
     if len(lines) == 1:
         return lines[0][:length_to_excerpt]
