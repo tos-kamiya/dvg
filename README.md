@@ -88,11 +88,13 @@ Number of worker processes. Option to run in parallel.
 
 ## Troubleshooting
 
-&rarr; [When I try to run dvg, I get an error message like: "ModuleNotFoundError: No module named 'docopt'".](docs/troubleshooting.md#no-docopt)
+&rarr; [An error message like: "ModuleNotFoundError: No module named 'docopt'"](docs/troubleshooting.md#no-docopt)
 
-&rarr; [When I try to run dvg, I get an error message like "dvg: command not found ".](docs/troubleshooting.md#command-not-found)
+&rarr; [An error message like "dvg: command not found ".](docs/troubleshooting.md#command-not-found)
 
-&rarr; [While running dvg, a warning message "None of PyTorch, TensorFlow >= 2.0, or Flax have been found..." appears.](docs/troubleshooting.md#none-of-pytorch)
+&rarr; [A warning message "None of PyTorch, TensorFlow >= 2.0, or Flax have been found..."](docs/troubleshooting.md#none-of-pytorch)
+
+&rarr; [Aborted by segmentation fault (SIGSEGV)](docs/troubleshooting.md#segfault)
 
 ## Acknowledgements
 

@@ -77,6 +77,7 @@ class CLArgs(InitAttrsWKwArgs):
     diagnostic: bool
     unix_wildcard: bool
     over_pruning: float
+    vv: bool
 
 
 __doc__: str = """Document-vector Grep.
@@ -104,6 +105,7 @@ Options:
   --diagnostic                  Check model installatin.
   --unix-wildcard, -u           Use Unix-style pattern expansion on Windows.
   --over-pruning=RATIO, -P RATIO        No effect (only for compatibility to dvgi).
+  --vv                          Show name of each input file (for debug).
 """.format(
     dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dec=DEFAULT_EXCERPT_CHARS
 )
@@ -159,6 +161,9 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArg
     search_results: List[SLPPD] = []
     sim_min_req = 0.5
     for df in doc_files:
+        if a.vv:
+            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> reading: %s" % df, file=sys.stderr, flush=True)
+
         # read lines from document file
         try:
             lines = scanner.scan(df)

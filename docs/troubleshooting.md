@@ -1,10 +1,10 @@
 ## Troubleshooting
 
-### <a id="no-docopt" /> When I try to run dvg, I get an error message like: "ModuleNotFoundError: No module named 'docopt'".
+### <a id="no-docopt" /> An error message like: "ModuleNotFoundError: No module named 'docopt'"
 
 You need to install either `docopt` or `docopt-ng` package. Run `pip3 install docopt-ng`.
 
-### <a id="command-not-found" /> When I try to run dvg, I get an error message like "dvg: command not found ".
+### <a id="command-not-found" /> An error message like "dvg: command not found "
 
 The `dvg` executable does not seem on PATH.
 
@@ -26,7 +26,10 @@ python3 -m dvg dvg ...  # Runs the dvg script
 python3 -m dvg dvgi ...  # Runs the dvgi script
 ```
 
-### <a id="none-of-pytorch" /> While running dvg, a warning message "None of PyTorch, TensorFlow >= 2.0, or Flax have been found..." appears.
+### <a id="none-of-pytorch" /> A warning message "None of PyTorch, TensorFlow >= 2.0, or Flax have been found..."
 
 Please install PyTorch as described in the installation instructions.
 
+### <a id="segfault" /> Aborted by segmentation fault (SIGSEGV)
+
+If the input file is corrupt for some reason, or if a binary file is read, `dvg` may abort by a segmentation fault. To identify which file is such a corrupt one, use the `--vv` option of `dvg` to show each file being read.

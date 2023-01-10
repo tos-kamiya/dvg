@@ -85,15 +85,17 @@ Verboseオプションです。指定すると、検索の進行中に、その�
 
 ## トラブルシューティング
 
-&rarr; [dvgを実行しようとすると、「ModuleNotFoundError: No module named 'docopt'」といったエラーメッセージが出る。](docs/troubleshooting.ja_JP.md#no-docopt)
+&rarr; [「ModuleNotFoundError: No module named 'docopt'」といったエラーメッセージ](docs/troubleshooting.ja_JP.md#no-docopt)
 
-&rarr; [dvgを実行しようとすると 「ModuleNotFoundError: No module named 'fugashi'」といったエラーメッセージが出る。](docs/troubleshooting.ja_JP.md#no-fugashi)
+&rarr; [「ModuleNotFoundError: No module named 'fugashi'」といったエラーメッセージ](docs/troubleshooting.ja_JP.md#no-fugashi)
 
-&rarr; [dvgを実行しようとすると 「dvg: command not found」といったエラーメッセージが出る。](docs/troubleshooting.ja_JP.md#command-not-found)
+&rarr; [「dvg: command not found」といったエラーメッセージ](docs/troubleshooting.ja_JP.md#command-not-found)
 
-&rarr; [dvgを実行中に 「None of PyTorch, TensorFlow >= 2.0, or Flax have been found. ...」という警告メッセージが表示される。](docs/troubleshooting.ja_JP.md#no-fugashi)
+&rarr; [「None of PyTorch, TensorFlow >= 2.0, or Flax have been found. ...」という警告メッセージ](docs/troubleshooting.ja_JP.md#no-fugashi)
 
-&rarr; [dvgを実行中に「UnicodeEncodeError: 'cp932' codec can't encode character ...」とっいたエラーメッセージが出る。](docs/troubleshooting.ja_JP.md#cp932)
+&rarr; [「UnicodeEncodeError: 'cp932' codec can't encode character ...」とっいたエラーメッセージ](docs/troubleshooting.ja_JP.md#cp932)
+
+&rarr; [セグメンテーションフォールト(SIGSEGV)で中断](docs/troubleshooting.ja_JP.md#segfault)
 
 ## 謝辞
 

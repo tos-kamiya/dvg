@@ -52,6 +52,7 @@ class CLArgs(InitAttrsWKwArgs):
     version: bool
     unix_wildcard: bool
     over_pruning: float
+    vv: bool
 
 
 __doc__: str = """Dvg with index DB.
@@ -82,6 +83,7 @@ Options:
   --workers=WORKERS -j WORKERS  Worker process [default: 1].
   --unix-wildcard, -u           Use Unix-style pattern expansion on Windows.
   --over-pruning=RATIO, -P RATIO        Excessive early pruning. Large values will result in **inaccurate** search results [default: {dop}].
+  --vv                          Show name of each input file (for debug).
 """.format(
     dtn=DEFAULT_TOP_N,
     dws=DEFAULT_WINDOW_SIZE,
@@ -176,6 +178,9 @@ def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: 
     dfc = 0
     dfs_wo_paraghraph = []
     for df in dfs:
+        if a.vv:
+            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> reading: %s" % df, file=sys.stderr, flush=True)
+
         dfc += 1
         try:
             df_mtime = floor(os.path.getmtime(df))
