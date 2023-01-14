@@ -102,7 +102,7 @@ Options:
   --excerpt-length=CHARS, -t CHARS      Length of the text to be excerpted [default: {dec}].
   --header, -H                  Print the header line.
   --workers=WORKERS, -j WORKERS         Worker process.
-  --diagnostic                  Check model installatin.
+  --diagnostic                  Check model installation.
   --unix-wildcard, -u           Use Unix-style pattern expansion on Windows.
   --over-pruning=RATIO, -P RATIO        No effect (only for compatibility to dvgi).
   --vv                          Show name of each input file (for debug).
