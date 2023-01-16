@@ -7,7 +7,7 @@
 
 ⚠️ In version 1.0.0b9, the model files have been revamped and now have a larger vocabulary and (vector) dimension. Due to PyPI space limitations, model files are not included in the distribution package; they are **downloaded from a website (https://toshihirokamiya.com/) at the first time you run `dvg`**.  
 
-ℹ️ Released an alpha version of `stng` ([PyPI](https://pypi.org/project/stng/), [GitHub](https://github.com/tos-kamiya)), a CLI tool similar to `dvg`, but uses a Sentence-Transformer model. Heavy for usual PCs, though depending on GPU performance.  
+ℹ️ Released an alpha version of `stng` ([PyPI](https://pypi.org/project/stng/), [GitHub](https://github.com/tos-kamiya/stng/)), a CLI tool similar to `dvg`, but uses a Sentence-Transformer model. Heavy for usual PCs, though depending on GPU performance.  
 
 # dvg
 
