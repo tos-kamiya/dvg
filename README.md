@@ -3,9 +3,11 @@
 &rarr; doc [main](https://github.com/tos-kamiya/dvg/) | [dev](https://github.com/tos-kamiya/dvg/tree/dev)  
 &rarr; Japanese doc [main](https://github.com/tos-kamiya/dvg/blob/main/README.ja_JP.md) | [dev](https://github.com/tos-kamiya/dvg/blob/dev/README.ja_JP.md)  
 
-⚠️ Warning: `dvg` is **incomplatible with CPython 3.11**, because some of its dependencyies are so. Reference: Python 3.11 Readiness [https://pyreadiness.org/3.11/](https://pyreadiness.org/3.11/)  
+⚠️ `dvg` is **incomplatible with CPython 3.11**, because some of its dependencyies are so. Reference: Python 3.11 Readiness [https://pyreadiness.org/3.11/](https://pyreadiness.org/3.11/)  
 
-⚠️ Warning: In version 1.0.0b9, the model files have been revamped and now have a larger vocabulary and (vector) dimension. Due to PyPI space limitations, model files are not included in the distribution package; they are **downloaded from a website (https://toshihirokamiya.com/) at the first time you run `dvg`**.  
+⚠️ In version 1.0.0b9, the model files have been revamped and now have a larger vocabulary and (vector) dimension. Due to PyPI space limitations, model files are not included in the distribution package; they are **downloaded from a website (https://toshihirokamiya.com/) at the first time you run `dvg`**.  
+
+ℹ️ Released an alpha version of `stng` ([PyPI](https://pypi.org/project/stng/), [GitHub](https://github.com/tos-kamiya)), a CLI tool similar to `dvg`, but uses a Sentence-Transformer model. Heavy for usual PCs, though depending on GPU performance.  
 
 # dvg
 

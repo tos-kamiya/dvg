@@ -1,8 +1,10 @@
 [![Tests](https://github.com/tos-kamiya/dvg/actions/workflows/tests.yaml/badge.svg)](https://github.com/tos-kamiya/dvg/actions/workflows/tests.yaml) [![CodeQL](https://github.com/tos-kamiya/dvg/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tos-kamiya/dvg/actions/workflows/codeql-analysis.yml)
 
-⚠️ 注意: `dvg` は**CPython 3.11とは非互換**です。一部の依存がCPython 3.11と非互換のためです。参考: Python 3.11 Readiness [https://pyreadiness.org/3.11/](https://pyreadiness.org/3.11/)  
+⚠ `dvg` は**CPython 3.11とは非互換**です。一部の依存がCPython 3.11と非互換のためです。参考: Python 3.11 Readiness [https://pyreadiness.org/3.11/](https://pyreadiness.org/3.11/)  
 
-⚠️ 注意: バージョン 1.0.0b9では、モデルファイルが刷新され、語彙数と（ベクトルの）次元が大きなものとなりました。容量の制限のためモデルファイルはPyPIに登録されているパッケージには含まれません。 **`dvg`の初回実行時にウェブサイト (https://toshihirokamiya.com/) からダウンロード** されます。  
+⚠️ バージョン 1.0.0b9では、モデルファイルが刷新され、語彙数と（ベクトルの）次元が大きなものとなりました。容量の制限のためモデルファイルはPyPIに登録されているパッケージには含まれません。 **`dvg`の初回実行時にウェブサイト (https://toshihirokamiya.com/) からダウンロード** されます。  
+
+ℹ️ `dvg`とよく似たCLIで、Sentence-Transformerのモデルを利用する `stng` ([PyPI](https://pypi.org/project/stng/), [GitHub](https://github.com/tos-kamiya/stng/)) のアルファ版をリリースいたしました。GPUの性能にもよりますが、一般的なPCだと重いです。  
 
 # dvg
 
