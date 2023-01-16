@@ -19,7 +19,7 @@ from win_wildcard import expand_windows_wildcard, get_windows_shell
 
 from .iter_funcs import chunked_iter, para_chunked_iter, sliding_window_iter
 from .models import SCDVModel, do_find_model_spec, load_tokenize_func
-from .scanners import Scanner, ScanError, ScanErrorNotFile
+from .scanners import Scanner, ScanError, ScanErrorNotFile, to_lines
 from .search_result import ANSI_ESCAPE_CLEAR_CUR_LINE, SLPPD, excerpt_text, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
 from .text_funcs import includes_all_texts, includes_any_of_texts
 
@@ -70,6 +70,7 @@ class CLArgs(InitAttrsWKwArgs):
     exclude: List[str]
     min_length: int
     excerpt_length: int
+    quote: bool
     header: bool
     workers: Optional[int]
     help: bool
@@ -90,21 +91,22 @@ Usage:
   dvg --version
 
 Options:
-  --verbose, -v                 Verbose.
-  --model=MODEL, -m MODEL       Model name.
-  --top-n=NUM, -n NUM           Show top NUM files [default: {dtn}].
-  --paragraph-search, -p        Search paragraphs in documents.
-  --window=NUM, -w NUM          Line window size [default: {dws}].
-  --query-file=QUERYFILE, -f QUERYFILE  Read query text from the file.
-  --include=TEXT, -i TEXT       Requires containing the specified text.
-  --exclude=TEXT, -e TEXT       Requires not containing the specified text.
-  --min-length=CHARS, -l CHARS  Paragraphs shorter than this get a penalty [default: {dplt}].
-  --excerpt-length=CHARS, -t CHARS      Length of the text to be excerpted [default: {dec}].
-  --header, -H                  Print the header line.
-  --workers=WORKERS, -j WORKERS         Worker process.
+  -v, --verbose                 Verbose.
+  -m MODEL, --model=MODEL       Model name.
+  -n NUM, --top-n=NUM           Show top NUM files [default: {dtn}].
+  -p, --paragraph-search        Search paragraphs in documents.
+  -w NUM, --window=NUM          Line window size [default: {dws}].
+  -f QUERYFILE, --query-file=QUERYFILE  Read query text from the file.
+  -i TEXT, --include=TEXT       Requires containing the specified text.
+  -e TEXT, --exclude=TEXT       Requires not containing the specified text.
+  -l CHARS, --min-length=CHARS  Paragraphs shorter than this get a penalty [default: {dplt}].
+  -t CHARS, --excerpt-length=CHARS      Length of the text to be excerpted [default: {dec}].
+  -q, --quote                   Show text instead of excerpt.
+  -H, --header                  Print the header line.
+  -j WORKERS, --workers=WORKERS         Worker process.
   --diagnostic                  Check model installation.
-  --unix-wildcard, -u           Use Unix-style pattern expansion on Windows.
-  --over-pruning=RATIO, -P RATIO        No effect (only for compatibility to dvgi).
+  -u, --unix-wildcard           Use Unix-style pattern expansion on Windows.
+  -P RATIO, --over-pruning=RATIO        No effect (only for compatibility to dvgi).
   --vv                          Show name of each input file (for debug).
 """.format(
     dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dec=DEFAULT_EXCERPT_CHARS
@@ -123,8 +125,7 @@ def do_extract_query_lines(query: Optional[str], query_file: Optional[str]) -> L
         finally:
             del scanner
     elif query is not None:
-        scanner = Scanner()
-        lines = scanner.to_lines(query)
+        lines = to_lines(query)
     else:
         assert False, "both query and query_file are None"
     return lines
@@ -162,7 +163,7 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArg
     sim_min_req = 0.5
     for df in doc_files:
         if a.vv:
-            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> reading: %s" % df, file=sys.stderr, flush=True)
+            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Warning] reading: %s" % df, file=sys.stderr, flush=True)
 
         # read lines from document file
         try:
@@ -170,7 +171,7 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArg
         except ScanErrorNotFile as e:
             continue
         except ScanError as e:
-            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> Warning: %s" % e, file=sys.stderr, flush=True)
+            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Warning] %s" % e, file=sys.stderr, flush=True)
             continue
 
         # for each paragraph in the file, calculate the similarity to the query
@@ -256,9 +257,9 @@ def main():
     # diagnostic mode
     if a.diagnostic:
         print("%s %s" % (a.model, str(model_spec)))
-        print("> Try to load tokenize function (may cause downloading data files).", file=sys.stderr, flush=True)
+        print("[Warning] Try to load tokenize function (may cause downloading data files).", file=sys.stderr, flush=True)
         load_tokenize_func(a.model)
-        print("> Done.", file=sys.stderr, flush=True)
+        print("[Info] Done.", file=sys.stderr, flush=True)
         sys.exit(0)
 
     lines = do_extract_query_lines(a.query, a.query_file)
@@ -297,10 +298,10 @@ def main():
             sys.exit(str(e))
         except KeyboardInterrupt:
             if a.verbose:
-                print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> Interrupted. Shows the search results up to now.\n" + "> number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
+                print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Warning] Interrupted. Shows the search results up to now.\n" + "[Info] number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
         else:
             if a.verbose:
-                print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
+                print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Info] number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
 
         # output search results
         trim_search_results(search_results, a.top_n)
@@ -310,9 +311,16 @@ def main():
             if sim < 0.5:
                 break
             para = lines[b:e]
-            excerpt = excerpt_text(para, model.similarity_to_lines, a.excerpt_length)
-            excerpt = unicodedata.normalize('NFKC', excerpt)
-            print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, para_len, df, b + 1, e, excerpt))
+            if a.quote:
+                print("%.4f\t%d\t%s:%d-%d" % (sim, para_len, df, b + 1, e))
+                for L in para:
+                    L = unicodedata.normalize('NFKC', L)
+                    print("> %s" % L)
+                print()
+            else:
+                excerpt = excerpt_text(para, model.similarity_to_lines, a.excerpt_length)
+                excerpt = unicodedata.normalize('NFKC', excerpt)
+                print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, para_len, df, b + 1, e, excerpt))
     finally:
         if shms is not None:
             model_shared_close(shms)

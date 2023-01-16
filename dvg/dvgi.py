@@ -46,6 +46,7 @@ class CLArgs(InitAttrsWKwArgs):
     exclude: List[str]
     min_length: int
     excerpt_length: int
+    quote: bool
     header: bool
     workers: Optional[int]
     help: bool
@@ -69,20 +70,21 @@ Options:
   --build                       (Re-) build index DB.
   --search                      Search (default).
   --ls                          Lookup consistency between index data and existing files.
-  --verbose, -v                 Verbose.
-  --model=MODEL, -m MODEL       Model name.
-  --top-n=NUM, -n NUM           Show top NUM files [default: {dtn}].
-  --paragraph-search, -p        Search paragraphs in documents.
-  --window=NUM, -w NUM          Line window size [default: {dws}].
-  --query-file=QUERYFILE, -f QUERYFILE  Read query text from the file.
-  --include=TEXT, -i TEXT       Requires containing the specified text.
-  --exclude=TEXT, -e TEXT       Requires not containing the specified text.
-  --min-length=CHARS, -l CHARS  Paragraphs shorter than this get a penalty [default: {dplt}].
-  --excerpt-length=CHARS, -t CHARS      Length of the text to be excerpted [default: {dec}].
-  --header, -H                  Print the header line.
-  --workers=WORKERS -j WORKERS  Worker process [default: 1].
-  --unix-wildcard, -u           Use Unix-style pattern expansion on Windows.
-  --over-pruning=RATIO, -P RATIO        Excessive early pruning. Large values will result in **inaccurate** search results [default: {dop}].
+  -v, --verbose                 Verbose.
+  -m MODEL, --model=MODEL       Model name.
+  -n NUM, --top-n=NUM           Show top NUM files [default: {dtn}].
+  -p, --paragraph-search        Search paragraphs in documents.
+  -w NUM, --window=NUM          Line window size [default: {dws}].
+  -f QUERYFILE, --query-file=QUERYFILE  Read query text from the file.
+  -i TEXT, --include=TEXT       Requires containing the specified text.
+  -e TEXT, --exclude=TEXT       Requires not containing the specified text.
+  -l CHARS, --min-length=CHARS  Paragraphs shorter than this get a penalty [default: {dplt}].
+  -t CHARS, --excerpt-length=CHARS      Length of the text to be excerpted [default: {dec}].
+  -q, --quote                   Show text instead of excerpt.
+  -H, --header                  Print the header line.
+  -j WORKERS, --workers=WORKERS         Worker process [default: 1].
+  -u, --unix-wildcard           Use Unix-style pattern expansion on Windows.
+  -P RATIO, --over-pruning=RATIO        Excessive early pruning. Large values will result in **inaccurate** search results [default: {dop}].
   --vv                          Show name of each input file (for debug).
 """.format(
     dtn=DEFAULT_TOP_N,
@@ -179,7 +181,7 @@ def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: 
     dfs_wo_paraghraph = []
     for df in dfs:
         if a.vv:
-            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> reading: %s" % df, file=sys.stderr, flush=True)
+            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Info] reading: %s" % df, file=sys.stderr, flush=True)
 
         dfc += 1
         try:
@@ -193,7 +195,7 @@ def calc_df_clusters(dfs: Iterable[str], model: SCDVModel, scanner: Scanner, a: 
         except ScanErrorNotFile as e:
             continue
         except ScanError as e:
-            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> Warning: %s" % e, file=sys.stderr, flush=True)
+            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Warning] %s" % e, file=sys.stderr, flush=True)
             continue  # for df
         any_paragraph_exracted = False
         for pos in sliding_window_iter(len(lines), a.window):
@@ -265,7 +267,7 @@ def calc_para_similarity(df_mt_pos_it: Iterable[Tuple[str, int, Tuple[int, int]]
             try:
                 lines = scanner.scan(df)
             except ScanError as e:
-                print("> Warning: %s" % e, file=sys.stderr, flush=True)
+                print("[Warning] %s" % e, file=sys.stderr, flush=True)
                 continue  # for df
             prev_df_mt = (df, df_mt)
         assert lines is not None
@@ -365,17 +367,17 @@ def main():
                             count_document_files += dfc
                             if a.verbose:
                                 t = time.time() - t0
-                                print("%s[%d docs done in %.0fs, %.2f docs/s]" % (ANSI_ESCAPE_CLEAR_CUR_LINE, count_document_files, t, count_document_files / t), end="", file=sys.stderr, flush=True)
+                                print("%s[Info] %d docs done in %.0fs, %.2f docs/s" % (ANSI_ESCAPE_CLEAR_CUR_LINE, count_document_files, t, count_document_files / t), end="", file=sys.stderr, flush=True)
                 except Exception as e:
                     if a.verbose:
                         print(ANSI_ESCAPE_CLEAR_CUR_LINE, file=sys.stderr, flush=True)
                     raise e
                 else:
                     if a.verbose:
-                        print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
+                        print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Info] number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
                     if count_document_files_wo_paragraph > 0:
-                        print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> number of document files without a valid paragraph: %d" % count_document_files_wo_paragraph, file=sys.stderr)
-                        print("> ... the file names were saved in: %s" % document_files_wo_paragraph, file=sys.stderr, flush=True)
+                        print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Info] number of document files without a valid paragraph: %d" % count_document_files_wo_paragraph, file=sys.stderr)
+                        print("[Info] ... the file names were saved in: %s" % document_files_wo_paragraph, file=sys.stderr, flush=True)
                 finally:
                     if shms is not None:
                         model_shared_close(shms)
@@ -434,10 +436,10 @@ def main():
                             print_intermediate_search_result(search_results, count_document_files, time.time() - t0)
             except KeyboardInterrupt:
                 if a.verbose:
-                    print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> Interrupted. Shows the search results up to now.\n" + "> number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
+                    print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Warning] Interrupted. Shows the search results up to now.\n" + "[Info] number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
             else:
                 if a.verbose:
-                    print(ANSI_ESCAPE_CLEAR_CUR_LINE + "> number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
+                    print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Info] number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
 
             # output search results
             trim_search_results(search_results, a.top_n)
@@ -446,7 +448,14 @@ def main():
             for sim, para_len, (b, e), lines, df in search_results:
                 if sim < 0.5:
                     break
-                para = lines[b:e]
+            para = lines[b:e]
+            if a.quote:
+                print("%.4f\t%d\t%s:%d-%d" % (sim, para_len, df, b + 1, e))
+                for L in para:
+                    L = unicodedata.normalize('NFKC', L)
+                    print("> %s" % L)
+                print()
+            else:
                 excerpt = excerpt_text(para, model.similarity_to_lines, a.excerpt_length)
                 excerpt = unicodedata.normalize('NFKC', excerpt)
                 print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, para_len, df, b + 1, e, excerpt))

@@ -12,6 +12,14 @@ import uuid
 _script_dir: str = os.path.dirname(os.path.realpath(__file__))
 
 
+def to_lines(text: str) -> List[str]:
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x20\x7f-\x9f]+", " ", unicodedata.normalize("NFKD", text))
+    text = re.sub(r"[\u0020\u00a0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000]+", " ", text)
+    lines = [L.strip() for L in text.split("\n")]
+    lines = [L for L in lines if L]
+    return lines
+
+
 @contextmanager
 def open_file(filename: str, mode: str = "r") -> Generator[TextIO, None, None]:
     with open(filename, mode, encoding="utf-8", errors="replace") as fp:
@@ -52,11 +60,7 @@ class Scanner:
             raise e
         except Exception as e:
             raise ScanError("ScanError: in reading file: %s" % repr(file_name)) from e
-        return self.to_lines(text)
-
-    def to_lines(self, text: str) -> List[str]:
-        text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x20\x7f-\x9f]+", " ", unicodedata.normalize("NFKD", text))
-        return [L.strip() for L in text.split("\n")]
+        return to_lines(text)
 
     def _scan_i(self, file_name: str) -> str:
         assert file_name != "-"

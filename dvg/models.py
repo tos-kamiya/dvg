@@ -84,7 +84,7 @@ def do_find_model_spec(model_name: str, model_dir: Optional[str] = None) -> Mode
 
     spec = find_model_spec(model_name, model_dir)
     if spec is None or spec.version != url.version:
-        print("> Model file not installed. Proceed to installation of the model model: %s %s" % (model_name, url.version), file=sys.stderr, flush=True)
+        print("[Info] Model file not installed. Proceed to installation of the model model: %s %s" % (model_name, url.version), file=sys.stderr, flush=True)
         do_download_model(url, model_dir=model_dir)
         spec = find_model_spec(model_name, model_dir)
 
@@ -172,7 +172,7 @@ def do_download_model(url: ModelUrl, model_dir: Optional[str] = None) -> None:
     if model_dir is None:
         model_dir = os.path.join(_script_dir, "models")
 
-    print("> Downloading model file from: %s" % url.file_url, file=sys.stderr, flush=True)
+    print("[Info] Downloading model file from: %s" % url.file_url, file=sys.stderr, flush=True)
     fn = os.path.basename(url.file_url)
     fp = os.path.join(model_dir, fn)
     try:
@@ -190,4 +190,4 @@ def do_download_model(url: ModelUrl, model_dir: Optional[str] = None) -> None:
     except:
         sys.exit("Error: failed to uncompress model file.")
 
-    print("> Successfully installed the model file.", file=sys.stderr, flush=True)
+    print("[Info] Successfully installed the model file.", file=sys.stderr, flush=True)
