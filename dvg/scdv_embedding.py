@@ -1,14 +1,15 @@
-from typing import Iterable, List, NewType
+from typing import Iterable, List
 
 from collections import Counter
 import pickle
 import sys
 
 import numpy as np
+import numpy.typing as npt
 from numpy.linalg import norm
 
 
-Vec = NewType("Vec", np.ndarray)
+Vec = npt.NDArray
 
 
 def inner_product_n(dv: Vec, pv: Vec) -> float:

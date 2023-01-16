@@ -131,7 +131,7 @@ class SCDVModel:
         self._optimize_for_query_lines(lines)
         self.query_vec = self._query_to_vec(lines)
 
-    def get_query_vec(self) -> Vec:
+    def get_query_vec(self) -> Optional[Vec]:
         return self.query_vec
 
     def similarity_to_lines(self, lines: List[str]) -> float:

@@ -141,7 +141,7 @@ def clip_clusters_by_norm(cluster_norms: List[Tuple[int, float]]) -> List[Tuple[
 
     ns = sorted((n for ci, n in cluster_norms), reverse=True)
     if ns[0] < 0.01:
-        return ''
+        return []
 
     threshold1 = ns[:5][-1]
     threshold2 = ns[0] / 10
@@ -355,7 +355,8 @@ def main():
                 t0 = time.time()
 
                 try:
-                    args_it = ((dfs, model, scanner, a) for dfs in para_chunked_iter(expand_file_iter(a.file, windows_style=not a.unix_wildcard), chunk_size, a.workers))
+                    workers = a.workers if a.workers is not None else 1
+                    args_it = ((dfs, model, scanner, a) for dfs in para_chunked_iter(expand_file_iter(a.file, windows_style=not a.unix_wildcard), chunk_size, workers))
                     with Pool(processes=a.workers) as pool:
                         for r, dfc, dfs_wo_p in pool.imap_unordered(calc_df_clusters_i, args_it):
                             for df, df_mtime, pos, cn in r:
@@ -448,17 +449,17 @@ def main():
             for sim, para_len, (b, e), lines, df in search_results:
                 if sim < 0.5:
                     break
-            para = lines[b:e]
-            if a.quote:
-                print("%.4f\t%d\t%s:%d-%d" % (sim, para_len, df, b + 1, e))
-                for L in para:
-                    L = unicodedata.normalize('NFKC', L)
-                    print("> %s" % L)
-                print()
-            else:
-                excerpt = excerpt_text(para, model.similarity_to_lines, a.excerpt_length)
-                excerpt = unicodedata.normalize('NFKC', excerpt)
-                print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, para_len, df, b + 1, e, excerpt))
+                para = lines[b:e]
+                if a.quote:
+                    print("%.4f\t%d\t%s:%d-%d" % (sim, para_len, df, b + 1, e))
+                    for L in para:
+                        L = unicodedata.normalize('NFKC', L)
+                        print("> %s" % L)
+                    print()
+                else:
+                    excerpt = excerpt_text(para, model.similarity_to_lines, a.excerpt_length)
+                    excerpt = unicodedata.normalize('NFKC', excerpt)
+                    print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, para_len, df, b + 1, e, excerpt))
         finally:
             if shms is not None:
                 model_shared_close(shms)
