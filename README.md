@@ -38,46 +38,49 @@ Each line of output is, from left to right, similarity (the closer the number is
 
 `dvg` has several options. Here are some options that may be used frequently.
 
-`--verbose, -v`  
+`-v, --verbose`  
 Verbose option. If specified, it will show the documents that have the highest similarity at that time.
 
-`--model=MODEL, -m MODEL`  
+`-m MODEL, --model=MODEL`  
 The available models are `en` (for English documents) and `ja` (for Japanese documents).
 
-`--top-n=NUM, -n NUM`  
+`-n NUM, --top-n=NUM`  
 Show top NUM documents as results. The default value is 20.
 Specify `0` to show all the documents searched, sorted by the degree of match to the query.
 
-`--paragraph, -p`  
+`-p, --paragraph`  
 If this option is specified, each paragraph in one document file will be considered as a document. Multiple paragraphs of a single document file will be output in the search results.
 If this option is not specified, one document file will be considered as one document. A single document file will be displayed in the search results only once at most.
 
-`--window=NUM, -w NUM`  
+`-w NUM, --window=NUM`  
 A chunk of lines specified by this number will be recognized as a paragraph.
 The default value is 20.
 
-`--query-file=QUERYFILE, -f QUERYFILE`  
+`-f QUERYFILE, --query-file=QUERYFILE`  
 Read query text from the file.
 The query file could be a PDF as well as a text file, like document files.
 
 (As far as I have tried, when the query is specified as a file, better results tend to be obtained by increasing the size of the paragraph with the --window option, e.g. `-w 80`)
 
-`--include=TEXT, -i TEXT`  
+`-i TEXT, --include=TEXT`  
 Only paragraphs that contain the specified string will be included in the search results.
 
-`--exclude=TEXT, -e TEXT`  
+`-e TEXT, --exclude=TEXT`  
 Only paragraphs that do not contain the specified string will be included in the search results.
 
-`--min-length=CHARS, -l CHARS`  
+`-l CHARS, --min-length=CHARS`  
 Paragraphs shorter than this value get their similarity values lowered. You can use this to exclude short paragraphs from the search results. The default value is 80.
 
-`--excerpt-length=CHARS, -t CHARS`  
+`-t CHARS, --excerpt-length=CHARS`  
 The length of the excerpt displayed in the rightmost column of the search results. The default value is 80.
 
-`--header, -H`  
+`-q, --quote`  
+Show the entire paragraph (without excerpts) of search results.
+
+`-H, --header`  
 Add a heading line to the output.
 
-`--worker=NUM, -j NUM`  
+`-j NUM, --worker=NUM`  
 Number of worker processes. Option to run in parallel.
 
 ## Hints
