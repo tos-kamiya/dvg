@@ -77,7 +77,6 @@ class CLArgs(InitAttrsWKwArgs):
     version: bool
     diagnostic: bool
     unix_wildcard: bool
-    over_pruning: float
     vv: bool
 
 
@@ -106,7 +105,6 @@ Options:
   -j WORKERS, --workers=WORKERS         Worker process.
   --diagnostic                  Check model installation.
   -u, --unix-wildcard           Use Unix-style pattern expansion on Windows.
-  -P RATIO, --over-pruning=RATIO        No effect (only for compatibility to dvgi).
   --vv                          Show name of each input file (for debug).
 """.format(
     dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dec=DEFAULT_EXCERPT_CHARS

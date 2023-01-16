@@ -9,4 +9,3 @@ from . import iter_funcs
 from . import text_funcs
 from . import search_result
 from . import dvg
-from . import dvgi
