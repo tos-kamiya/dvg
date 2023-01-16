@@ -87,8 +87,6 @@ Number of worker processes. Option to run in parallel.
 
 &rarr; [Search individual lines of a text file](docs/search-individual-lines.md)
 
-&rarr; [Indexing](docs/indexing.md)  
-
 ## Troubleshooting
 
 &rarr; [An error message like: "ModuleNotFoundError: No module named 'docopt'"](docs/troubleshooting.md#no-docopt)

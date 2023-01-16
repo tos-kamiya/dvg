@@ -24,11 +24,7 @@ Ubuntuを使っている場合は、`~/.profile` や `~/.bashrc` 等のシェル
 何らかの理由により、環境変数PATHを設定したくない場合には、次のように実行することもできます。
 
 ```sh
-python3 -m dvg dvg ...  # dvgスクリプトを実行
-```
-
-```sh
-python3 -m dvg dvgi ...  # dvgiスクリプトを実行
+python3 -m dvg ...  # dvgスクリプトを実行
 ```
 
 ### <a id="none-of-pytorch" /> 「None of PyTorch, TensorFlow >= 2.0, or Flax have been found. ...」という警告メッセージ

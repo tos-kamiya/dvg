@@ -84,8 +84,6 @@ Verboseオプションです。指定すると、検索の進行中に、その�
 
 &rarr; [テキストファイルの各行を検索する](docs/search-individual-lines.ja_JP.md)  
 
-&rarr; [インデックス化](docs/indexing.ja_JP.md)  
-
 ## トラブルシューティング
 
 &rarr; [「ModuleNotFoundError: No module named 'docopt'」といったエラーメッセージ](docs/troubleshooting.ja_JP.md#no-docopt)

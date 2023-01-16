@@ -19,11 +19,7 @@ If you are using Ubuntu, check the PATH variable in shell configuration files, s
 If you do not want to set the PATH environment variable for some reason, you can still run the dvg scripts:
 
 ```sh
-python3 -m dvg dvg ...  # Runs the dvg script
-```
-
-```sh
-python3 -m dvg dvgi ...  # Runs the dvgi script
+python3 -m dvg ...  # Runs the dvg script
 ```
 
 ### <a id="none-of-pytorch" /> A warning message "None of PyTorch, TensorFlow >= 2.0, or Flax have been found..."
