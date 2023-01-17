@@ -87,7 +87,9 @@ Number of worker processes. Option to run in parallel.
 
 ## Hints
 
-&rarr; [Search individual lines of a text file](docs/search-individual-lines.md)
+&rarr; [Search individual lines of a text file](docs/search-individual-lines.md)  
+
+&rarr; [Improve search speed](docs/improve-search-speed.md)  
 
 ## Troubleshooting
 
