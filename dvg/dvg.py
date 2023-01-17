@@ -20,7 +20,14 @@ from win_wildcard import expand_windows_wildcard, get_windows_shell
 from .iter_funcs import chunked_iter, para_chunked_iter, sliding_window_iter
 from .models import SCDVModel, do_find_model_spec, load_tokenize_func
 from .scanners import Scanner, ScanError, ScanErrorNotFile, to_lines
-from .search_result import ANSI_ESCAPE_CLEAR_CUR_LINE, SLPLD, excerpt_text, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
+from .search_result import (
+    ANSI_ESCAPE_CLEAR_CUR_LINE,
+    SLPLD,
+    excerpt_text,
+    trim_search_results,
+    print_intermediate_search_result,
+    prune_overlapped_paragraphs,
+)
 from .text_funcs import includes_all_texts, includes_any_of_texts
 
 
@@ -114,7 +121,7 @@ Options:
 
 
 def do_extract_query_lines(query: Optional[str], query_file: Optional[str]) -> List[str]:
-    if query == '-' or query_file == '-':
+    if query == "-" or query_file == "-":
         lines = sys.stdin.read().splitlines()
     elif query_file is not None:
         scanner = Scanner()
@@ -179,7 +186,12 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArg
         for pos in sliding_window_iter(len(lines), a.window):
             para = lines[pos[0] : pos[1]]
             para_len = sum(len(L) for L in para)
-            if a.include and not includes_all_texts(para, a.include) or a.exclude and includes_any_of_texts(para, a.exclude):
+            if (
+                a.include
+                and not includes_all_texts(para, a.include)
+                or a.exclude
+                and includes_any_of_texts(para, a.exclude)
+            ):
                 continue  # for pos, para
 
             sim = model.similarity_to_lines(para)
@@ -233,7 +245,7 @@ def main():
             print(os.path.join(_script_dir, "models"))
             return
         if a == "--expand-wildcard":
-            file_pats = argv[i+1:]
+            file_pats = argv[i + 1 :]
             for fp in file_pats:
                 print("%s:" % fp)
                 for f in expand_file_iter([fp], windows_style=True):
@@ -261,7 +273,9 @@ def main():
     # diagnostic mode
     if a.diagnostic:
         print("%s %s" % (a.model, str(model_spec)))
-        print("[Warning] Try to load tokenize function (may cause downloading data files).", file=sys.stderr, flush=True)
+        print(
+            "[Warning] Try to load tokenize function (may cause downloading data files).", file=sys.stderr, flush=True
+        )
         load_tokenize_func(a.model)
         print("[Info] Done.", file=sys.stderr, flush=True)
         sys.exit(0)
@@ -281,7 +295,12 @@ def main():
         try:
             if a.workers and a.workers >= 2:
                 shms = model_shared(model)  # load the model into shared memory for process parallel
-                args_it = ((dfs, model, a) for dfs in para_chunked_iter(expand_file_iter(a.file, windows_style=not a.unix_wildcard), chunk_size, a.workers))
+                args_it = (
+                    (dfs, model, a)
+                    for dfs in para_chunked_iter(
+                        expand_file_iter(a.file, windows_style=not a.unix_wildcard), chunk_size, a.workers
+                    )
+                )
                 with Pool(processes=a.workers) as pool:
                     for srs, dfs in pool.imap_unordered(find_similar_paragraphs_i, args_it):
                         search_results.extend(srs)
@@ -303,13 +322,16 @@ def main():
         except KeyboardInterrupt:
             if a.verbose:
                 print(
-                    ANSI_ESCAPE_CLEAR_CUR_LINE
-                    + "[Warning] Interrupted. Shows the search results up to now.\n",
+                    ANSI_ESCAPE_CLEAR_CUR_LINE + "[Warning] Interrupted. Shows the search results up to now.\n",
                     file=sys.stderr,
-                    flush=True
+                    flush=True,
                 )
         if a.verbose:
-            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Info] number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
+            print(
+                ANSI_ESCAPE_CLEAR_CUR_LINE + "[Info] number of document files: %d" % count_document_files,
+                file=sys.stderr,
+                flush=True,
+            )
 
         # output search results
         trim_search_results(search_results, a.top_k)
@@ -322,12 +344,12 @@ def main():
             if a.quote:
                 print("%.4f\t%d\t%s:%d-%d" % (sim, para_len, df, b + 1, e))
                 for L in para:
-                    L = unicodedata.normalize('NFKC', L)
+                    L = unicodedata.normalize("NFKC", L)
                     print("> %s" % L)
                 print()
             else:
                 excerpt = excerpt_text(para, model.similarity_to_lines, a.excerpt_length)
-                excerpt = unicodedata.normalize('NFKC', excerpt)
+                excerpt = unicodedata.normalize("NFKC", excerpt)
                 print("%.4f\t%d\t%s:%d-%d\t%s" % (sim, para_len, df, b + 1, e, excerpt))
     finally:
         if shms is not None:

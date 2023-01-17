@@ -14,7 +14,11 @@ _script_dir: str = os.path.dirname(os.path.realpath(__file__))
 
 def to_lines(text: str) -> List[str]:
     text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x20\x7f-\x9f]+", " ", unicodedata.normalize("NFKD", text))
-    text = re.sub(r"[\u0020\u00a0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000]+", " ", text)
+    text = re.sub(
+        r"[\u0020\u00a0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000]+",
+        " ",
+        text,
+    )
     lines = [L.strip() for L in text.split("\n")]
     lines = [L for L in lines if L]
     return lines
@@ -47,8 +51,10 @@ else:
 class ScanError(Exception):
     pass
 
+
 class ScanErrorNotFile(ScanError):
     pass
+
 
 class Scanner:
     def scan(self, file_name: str) -> List[str]:
@@ -120,7 +126,9 @@ else:
             raise ScanError("Error: pdftotext is not installed.")
         else:
             if p.returncode != 0:
-                raise ScanError("ScanError: %s, file: %s, (%s)" % (p.stderr.decode("utf-8").rstrip(), repr(file_name), p.stdout))
+                raise ScanError(
+                    "ScanError: %s, file: %s, (%s)" % (p.stderr.decode("utf-8").rstrip(), repr(file_name), p.stdout)
+                )
             with open_file(tempf) as f:
                 text = f.read()
             return text

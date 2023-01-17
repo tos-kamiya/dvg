@@ -42,7 +42,9 @@ class SCDVEmbedding:
             if i is not None:
                 cv = self.cluster_idf_wvs[i]
                 if freq > 1:
-                    v += np.outer(freq * cv[:cluster_size], cv[cluster_size:])  # here, `cv[:cluster_size]` is shorter than `cv[cluster_size:]``
+                    v += np.outer(
+                        freq * cv[:cluster_size], cv[cluster_size:]
+                    )  # here, `cv[:cluster_size]` is shorter than `cv[cluster_size:]`
                 else:
                     v += np.outer(cv[:cluster_size], cv[cluster_size:])
 

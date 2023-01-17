@@ -28,10 +28,10 @@ def find_model_url(model_name: str, model_dir: Optional[str]) -> Optional[ModelU
     if model_dir is None:
         model_dir = os.path.join(_script_dir, "models")
 
-    with open(os.path.join(model_dir, 'model-urls.txt')) as inp:
+    with open(os.path.join(model_dir, "model-urls.txt")) as inp:
         for L in inp:
             L = L.rstrip()
-            fields = L.split(' ')
+            fields = L.split(" ")
             if fields[0] == model_name:
                 model_version_str = fields[1]
                 model_file_sha256_sum = fields[2]
@@ -63,7 +63,7 @@ def find_model_spec(model_name: str, model_dir: Optional[str] = None) -> Optiona
         with open(toml_file, "r") as inp:
             text = inp.read()
         data = toml.loads(text)
-        model_version = data.get("version", 'None')
+        model_version = data.get("version", "None")
         model_type = data["type"]
         assert model_type == "scdv"
         tokenizer_name = data["tokenizer"]
@@ -72,7 +72,7 @@ def find_model_spec(model_name: str, model_dir: Optional[str] = None) -> Optiona
         model_spec = ModelSpec(model_name, model_version, model_type, tokenizer_name, model_file_path)
         return model_spec
     elif len(files) >= 2:
-        sys.exit('Internal error: found multiple mode files.')
+        sys.exit("Internal error: found multiple mode files.")
     else:
         return None
 
@@ -80,16 +80,21 @@ def find_model_spec(model_name: str, model_dir: Optional[str] = None) -> Optiona
 def do_find_model_spec(model_name: str, model_dir: Optional[str] = None) -> ModelSpec:
     url = find_model_url(model_name, model_dir)
     if url is None:
-        sys.exit('Error: no such model: %s' % model_name)
+        sys.exit("Error: no such model: %s" % model_name)
 
     spec = find_model_spec(model_name, model_dir)
     if spec is None or spec.version != url.version:
-        print("[Info] Model file not installed. Proceed to installation of the model model: %s %s" % (model_name, url.version), file=sys.stderr, flush=True)
+        print(
+            "[Info] Model file not installed. Proceed to installation of the model model: %s %s"
+            % (model_name, url.version),
+            file=sys.stderr,
+            flush=True,
+        )
         do_download_model(url, model_dir=model_dir)
         spec = find_model_spec(model_name, model_dir)
 
     if spec is None or spec.version != url.version:
-        sys.exit('Error: (internal) model installation corrupted.')
+        sys.exit("Error: (internal) model installation corrupted.")
 
     return spec
 
@@ -160,10 +165,11 @@ class SCDVModel:
 
 # ref: https://www.quickprogrammingtips.com/python/how-to-calculate-sha256-hash-of-a-file-in-python.html
 
+
 def sha256sum_of_file(file_name: str) -> str:
     sha256 = hashlib.sha256()
-    with open(file_name, 'rb') as inp:
-        for bb in iter(lambda: inp.read(4096), b''):
+    with open(file_name, "rb") as inp:
+        for bb in iter(lambda: inp.read(4096), b""):
             sha256.update(bb)
     return sha256.hexdigest()
 

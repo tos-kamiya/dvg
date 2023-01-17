@@ -65,4 +65,20 @@ def trim_search_results(search_results: List[SLPLD], top_k: int):
 def print_intermediate_search_result(search_results: List[SLPLD], done_files: int, elapsed_time: float):
     if search_results:
         sim, para_len, pos, _para, df = search_results[0]
-        print("%s[Info] %d docs done in %.0fs, %.2f docs/s. cur top-1: %.4f %d %s:%d-%d" % (ANSI_ESCAPE_CLEAR_CUR_LINE, done_files, elapsed_time, done_files / elapsed_time, sim, para_len, df, pos[0] + 1, pos[1]), end="", file=sys.stderr, flush=True)
+        print(
+            "%s[Info] %d docs done in %.0fs, %.2f docs/s. cur top-1: %.4f %d %s:%d-%d"
+            % (
+                ANSI_ESCAPE_CLEAR_CUR_LINE,
+                done_files,
+                elapsed_time,
+                done_files / elapsed_time,
+                sim,
+                para_len,
+                df,
+                pos[0] + 1,
+                pos[1],
+            ),
+            end="",
+            file=sys.stderr,
+            flush=True,
+        )
