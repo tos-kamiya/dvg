@@ -20,7 +20,7 @@ from win_wildcard import expand_windows_wildcard, get_windows_shell
 from .iter_funcs import chunked_iter, para_chunked_iter, sliding_window_iter
 from .models import SCDVModel, do_find_model_spec, load_tokenize_func
 from .scanners import Scanner, ScanError, ScanErrorNotFile, to_lines
-from .search_result import ANSI_ESCAPE_CLEAR_CUR_LINE, SLPPD, excerpt_text, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
+from .search_result import ANSI_ESCAPE_CLEAR_CUR_LINE, SLPLD, excerpt_text, trim_search_results, print_intermediate_search_result, prune_overlapped_paragraphs
 from .text_funcs import includes_all_texts, includes_any_of_texts
 
 
@@ -154,10 +154,10 @@ def expand_file_iter(target_files: Iterable[str], windows_style: bool = False) -
                 yield f
 
 
-def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArgs) -> List[SLPPD]:
+def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArgs) -> List[SLPLD]:
     scanner = Scanner()
 
-    search_results: List[SLPPD] = []
+    search_results: List[SLPLD] = []
     sim_min_req = 0.5
     for df in doc_files:
         if a.vv:
@@ -173,7 +173,7 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArg
             continue
 
         # for each paragraph in the file, calculate the similarity to the query
-        slppds: List[SLPPD] = []
+        slplds: List[SLPLD] = []
         for pos in sliding_window_iter(len(lines), a.window):
             para = lines[pos[0] : pos[1]]
             para_len = sum(len(L) for L in para)
@@ -189,21 +189,21 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArg
                 if sim < sim_min_req:
                     continue  # for pos, para
 
-            slppds.append((sim, para_len, pos, lines, df))
+            slplds.append((sim, para_len, pos, lines, df))
 
-        if not slppds:
+        if not slplds:
             continue  # for df
 
         # pick up paragraphs for the file
         if a.paragraph_search:
-            slppds = prune_overlapped_paragraphs(slppds)  # remove paragraphs that overlap
-            slppds.sort(reverse=True)
-            del slppds[a.top_n :]
+            slplds = prune_overlapped_paragraphs(slplds)  # remove paragraphs that overlap
+            slplds.sort(reverse=True)
+            del slplds[a.top_n :]
         else:
-            slppds = [max(slppds)]  # extract only the most similar paragraphs in the file
+            slplds = [max(slplds)]  # extract only the most similar paragraphs in the file
 
         # update search results
-        search_results.extend(slppds)
+        search_results.extend(slplds)
         if len(search_results) >= a.top_n * (2 if sim_min_req > 0.5 else 1):
             trim_search_results(search_results, a.top_n)
             sim_min_req = search_results[-1][0]
@@ -270,7 +270,7 @@ def main():
         # search for document files that are similar to the query
         if a.verbose:
             print("", end="", file=sys.stderr, flush=True)
-        search_results: List[SLPPD] = []
+        search_results: List[SLPLD] = []
         t0 = time()
         try:
             if a.workers and a.workers >= 2:
@@ -296,10 +296,14 @@ def main():
             sys.exit(str(e))
         except KeyboardInterrupt:
             if a.verbose:
-                print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Warning] Interrupted. Shows the search results up to now.\n" + "[Info] number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
-        else:
-            if a.verbose:
-                print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Info] number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
+                print(
+                    ANSI_ESCAPE_CLEAR_CUR_LINE
+                    + "[Warning] Interrupted. Shows the search results up to now.\n",
+                    file=sys.stderr,
+                    flush=True
+                )
+        if a.verbose:
+            print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Info] number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
 
         # output search results
         trim_search_results(search_results, a.top_n)
