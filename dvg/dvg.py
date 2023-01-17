@@ -51,7 +51,7 @@ def model_shared_close(shms):
 
 
 VERSION = importlib.metadata.version("dvg")
-DEFAULT_TOP_N = 20
+DEFAULT_TOP_K = 20
 DEFAULT_WINDOW_SIZE = 20
 DEFAULT_EXCERPT_CHARS = 80
 DEFAULT_PREFER_LONGER_THAN = 80
@@ -63,7 +63,8 @@ class CLArgs(InitAttrsWKwArgs):
     file: List[str]
     verbose: bool
     model: str
-    top_n: int
+    top_k: int
+    top_n: Optional[int]
     paragraph_search: bool
     window: int
     include: List[str]
@@ -92,7 +93,7 @@ Usage:
 Options:
   -v, --verbose                 Verbose.
   -m MODEL, --model=MODEL       Model name.
-  -n NUM, --top-n=NUM           Show top NUM files [default: {dtn}].
+  -k NUM, --top-k=NUM           Show top NUM files [default: {dtk}].
   -p, --paragraph-search        Search paragraphs in documents.
   -w NUM, --window=NUM          Line window size [default: {dws}].
   -f QUERYFILE, --query-file=QUERYFILE  Read query text from the file.
@@ -106,8 +107,9 @@ Options:
   --diagnostic                  Check model installation.
   -u, --unix-wildcard           Use Unix-style pattern expansion on Windows.
   --vv                          Show name of each input file (for debug).
+  -n NUM, --top-n=NUM           Show top NUM files (same as option -k).
 """.format(
-    dtn=DEFAULT_TOP_N, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dec=DEFAULT_EXCERPT_CHARS
+    dtk=DEFAULT_TOP_K, dws=DEFAULT_WINDOW_SIZE, dplt=DEFAULT_PREFER_LONGER_THAN, dec=DEFAULT_EXCERPT_CHARS
 )
 
 
@@ -198,17 +200,17 @@ def find_similar_paragraphs(doc_files: Iterable[str], model: SCDVModel, a: CLArg
         if a.paragraph_search:
             slplds = prune_overlapped_paragraphs(slplds)  # remove paragraphs that overlap
             slplds.sort(reverse=True)
-            del slplds[a.top_n :]
+            del slplds[a.top_k :]
         else:
             slplds = [max(slplds)]  # extract only the most similar paragraphs in the file
 
         # update search results
         search_results.extend(slplds)
-        if len(search_results) >= a.top_n * (2 if sim_min_req > 0.5 else 1):
-            trim_search_results(search_results, a.top_n)
+        if len(search_results) >= a.top_k * (2 if sim_min_req > 0.5 else 1):
+            trim_search_results(search_results, a.top_k)
             sim_min_req = search_results[-1][0]
 
-    trim_search_results(search_results, a.top_n)
+    trim_search_results(search_results, a.top_k)
     return search_results
 
 
@@ -248,6 +250,10 @@ def main():
     raw_args = docopt(__doc__, argv=argv, version="dvg %s" % VERSION)
     a = CLArgs(_cast_str_values=True, **raw_args)
 
+    # backward compatibility issue
+    if a.top_n is not None:
+        a.top_k = a.top_n
+
     model_spec = do_find_model_spec(a.model)
     tokenizer, model_file = model_spec.tokenizer_name, model_spec.file_path
     model = SCDVModel(tokenizer, model_file)
@@ -279,14 +285,14 @@ def main():
                 with Pool(processes=a.workers) as pool:
                     for srs, dfs in pool.imap_unordered(find_similar_paragraphs_i, args_it):
                         search_results.extend(srs)
-                        trim_search_results(search_results, a.top_n)
+                        trim_search_results(search_results, a.top_k)
                         count_document_files += len(dfs)
                         if a.verbose:
                             print_intermediate_search_result(search_results, count_document_files, time() - t0)
             else:
                 for dfs in chunked_iter(expand_file_iter(a.file), chunk_size):
                     search_results.extend(find_similar_paragraphs(dfs, model, a))
-                    trim_search_results(search_results, a.top_n)
+                    trim_search_results(search_results, a.top_k)
                     count_document_files += len(dfs)
                     if a.verbose:
                         print_intermediate_search_result(search_results, count_document_files, time() - t0)
@@ -306,7 +312,7 @@ def main():
             print(ANSI_ESCAPE_CLEAR_CUR_LINE + "[Info] number of document files: %d" % count_document_files, file=sys.stderr, flush=True)
 
         # output search results
-        trim_search_results(search_results, a.top_n)
+        trim_search_results(search_results, a.top_k)
         if a.header:
             print("\t".join(["sim", "chars", "location", "text"]))
         for sim, para_len, (b, e), lines, df in search_results:

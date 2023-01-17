@@ -57,9 +57,9 @@ def excerpt_text(lines: List[str], similarity_to_lines: Callable[[List[str]], fl
     return excerpt
 
 
-def trim_search_results(search_results: List[SLPLD], top_n: int):
+def trim_search_results(search_results: List[SLPLD], top_k: int):
     search_results.sort(reverse=True)
-    del search_results[top_n:]
+    del search_results[top_k:]
 
 
 def print_intermediate_search_result(search_results: List[SLPLD], done_files: int, elapsed_time: float):

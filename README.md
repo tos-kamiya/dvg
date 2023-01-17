@@ -46,7 +46,7 @@ Verbose option. If specified, it will show the documents that have the highest s
 `-m MODEL, --model=MODEL`  
 The available models are `en` (for English documents) and `ja` (for Japanese documents).
 
-`-n NUM, --top-n=NUM`  
+`-k NUM, --top-k=NUM`  
 Show top NUM documents as results. The default value is 20.
 Specify `0` to show all the documents searched, sorted by the degree of match to the query.
 
