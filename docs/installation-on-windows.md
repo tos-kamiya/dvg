@@ -4,20 +4,21 @@ The `dvg` is compatible with Python versions from `3.8` to `3.10`.
 
 ### Full install
 
-(1) Install Python **3.10.x or earlier** from [https://www.python.org/downloads/](https://www.python.org/downloads/).
+(1) Install Python **3.10.x or earlier** from [https://www.python.org/downloads/](https://www.python.org/downloads/)  
+("Downloads" &rarr; "Windows" &rarr; "Python releases for Windows" page)
 
 * If you have other versions of Python installed, you will probably need to uninstall them.
 * In the installer dialog, **check the "Add Python 3.10 to PATH" checkbox**.
 
 (2) Install Chocolatey [https://chocolatey.org/](https://chocolatey.org/).
 
-(3) Run following commands in command prompt.
+(3) Run following commands in command prompt (or PowerShell) in Admin mode.
 
 ```
+choco install vcredist140
 choco install poppler
 pip install wheel
 pip install torch
-pip install pdftotext
 pip install dvg[docopt-ng,ja]
 dvg -m en --diagnostic
 dvg -m ja --diagnostic
@@ -48,27 +49,18 @@ pip install wheel
 pip install dvg
 ```
 
-(3) Install pdftotext. **(option)**
+(3) Install the `pdftotext` command. **(option)**
 
-If you want to search PDF files, please install `poppler` according to either (3.1) or (3.2) below.
+`Poppler` is needed to search PDF files.
 
-(3.1) Use [Chocolatey](https://chocolatey.org/)
-
-You can install Poppler as follows:
+With [Chocolatey](https://chocolatey.org/), you can install `Poppler` in command prompt (or PowerShell) in Admin mode as follows:
 
 ```sh
+choco install vcredist140
 choco install poppler
 ```
 
-(3.2) Install Poppler manually.
-
-Download and extract Poppler from the following page.
-
-https://blog.alivate.com.au/poppler-windows/
-
-Then, add a directory where `pdftotext.exe` is located to your PATH. For example, if the extracted directory is "C:\Users\toshihiro\apps\poppler-0.68.0_x86\poppler-0.68.0" then add "C:\Users\toshihiro\apps\pdftotext.exe poppler-0.68.0_x86\poppler-0.68.0\bin\" to PATH.
-
-Make sure you can run pdftotext from (such as) a command prompt.
+Make sure you can run `pdftotext` on command prompt or PowerShell.
 
 (4) Download model files **(option)**
 
@@ -79,7 +71,7 @@ These files are downloaded dynamically when needed at runtime, but can also be d
 dvg -m en --diagnostic
 ```
 
-(5) Japanese Model **(option)** 
+(5) Japanese Model **(option)**
 
 If you want to use the Japanese model, please install it with `[ja]` as follows:
 
