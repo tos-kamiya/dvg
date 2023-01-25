@@ -116,3 +116,7 @@ dvg is distributed under [BSD-2](https://opensource.org/licenses/BSD-2-Clause) l
 
 * D. Mekala et al., "SCDV: Sparse Composite Document Vectors using soft clustering over distributional representations," https://arxiv.org/abs/1612.06778
 
+## Todo
+
+- [ ] Change PDF text extraction tool to GhostScript for easier installation on Windows
+
